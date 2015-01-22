@@ -75,7 +75,12 @@ public class ModelUtils {
 		
 		SGD cls=new SGD();
 		Instances structure = train.getStructure(); 
-		structure.setClassIndex(structure.numAttributes() - 1); 
+		if(DATATYPE.equals("libsvm")){
+			structure.setClassIndex(0);
+		}else{
+			structure.setClassIndex(structure.numAttributes() - 1);
+		}
+		 
 		Instance current;
 		int m_NumClasses = structure.classAttribute().numValues();
 		String [] m_ClassNames = new String [m_NumClasses];
@@ -92,14 +97,7 @@ public class ModelUtils {
 		
 		
 		int sum=0,correct=0,wrong=0;
-		test.setSource(new File(TESTFILE));
-		structure = test.getStructure(); 
-		if(DATATYPE.equals("libsvm")){
-			structure.setClassIndex(0);
-		}else{
-			structure.setClassIndex(structure.numAttributes() - 1);
-		}
-		
+		test.setSource(new File(TESTFILE));		
 		
 		while ((current = test.getNextInstance(structure)) != null) {
 		    // classifier is of type SGD.
