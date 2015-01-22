@@ -10,7 +10,6 @@ import java.util.Vector;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.Logistic;
-import weka.classifiers.functions.SGD;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
@@ -18,6 +17,8 @@ import weka.core.SparseInstance;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.LibSVMLoader;
 import weka.core.converters.Loader;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.NumericToNominal;
 
 
 public class ModelUtils {
@@ -37,16 +38,12 @@ public class ModelUtils {
 	 */
 	public static void main(String[] args) throws IOException, Exception {
 		
-		if(args.length==5){
+		if(args.length==4){
 			TRAINFILE=args[0];
 			TESTFILE=args[1];
 			MODEL=args[2];
 			DATATYPE=args[3];
-			if(args[4].equals("logistic")){
-				trainLogistic();
-			}else{
-				trainSGDIncrement();
-			}
+			train();
 			
 			//predict();
 		}else{
@@ -57,93 +54,44 @@ public class ModelUtils {
 
 	}
 
-	public static void trainSGDIncrement() throws Exception{
-		System.out.println("Training...");
+	public static void train() throws Exception{
+		System.out.println("Training Logistic...");
 		
 		Loader train;
 		Loader test;
-		if(DATATYPE.equals("libsvm")){
-			train = new LibSVMLoader();
-			test = new LibSVMLoader();
-			
-		}else{
-			train = new ArffLoader();
-			test = new ArffLoader();
-		}
-		
-		train.setSource(new File(TRAINFILE));
-		
-		SGD cls=new SGD();
-		Instances structure = train.getStructure(); 
-		if(DATATYPE.equals("libsvm")){
-			structure.setClassIndex(0);
-		}else{
-			structure.setClassIndex(structure.numAttributes() - 1);
-		}
-		 
+		Instances structure;
+		Instances data;
 		Instance current;
-		int m_NumClasses = structure.classAttribute().numValues();
-		String [] m_ClassNames = new String [m_NumClasses];
-		
-		for(int j =0;j<m_NumClasses;j++){
-			m_ClassNames[j] = structure.classAttribute().value(j);
-		}
-		
-		cls.buildClassifier(structure); 
-		while ((current = train.getNextInstance(structure)) != null) {
-		    // classifier is of type SGD.
-		    cls.updateClassifier(current);
-		 }
-		
-		
 		int sum=0,correct=0,wrong=0;
-		test.setSource(new File(TESTFILE));		
 		
-		while ((current = test.getNextInstance(structure)) != null) {
-		    // classifier is of type SGD.
-		    if(cls.classifyInstance(current)==current.classValue()){
-		    	correct++;
-		    }else{
-		    	wrong++;
-		    }
-		    sum++;
-		 }
-			
-		
-		System.out.println("sum="+sum+",correct="+correct+",wrong="+wrong);
-			
-		// save model + header
-	    Vector v = new Vector();
-	    v.add(cls);
-	    v.add(structure);
-	    v.add(m_ClassNames);
-	    SerializationHelper.write(MODEL, v);
-		
-		System.out.println("Training finished!");
-		
-	}
-
-	public static void trainLogistic() throws Exception{
-		System.out.println("Training...");
-		Loader train;
-		Loader test;
 		if(DATATYPE.equals("libsvm")){
 			train = new LibSVMLoader();
 			test = new LibSVMLoader();
+			train.setSource(new File(TRAINFILE));
+			test.setSource(new File(TESTFILE));	
+			data = train.getDataSet();
 			
+			structure = train.getStructure();
+			structure.setClassIndex(0);
+			
+			
+			NumericToNominal filter = new NumericToNominal();
+			filter.setOptions(new String[]{"-R","last"});
+			filter.setInputFormat(data);			
+			data = Filter.useFilter(data, filter);
+			
+			System.out.println("input format is libsvm");
 		}else{
 			train = new ArffLoader();
 			test = new ArffLoader();
-		}
-		
-		train.setSource(new File(TRAINFILE));
+			data = train.getDataSet();
+			structure = train.getStructure();
+			structure.setClassIndex(structure.numAttributes() - 1);
+			System.out.println("input format is arff");
+		}				
 		
 		Logistic cls=new Logistic();
-		cls.setOptions(new String[]{"-R","0.00000001","-M","-1"});
-		
-		Instances structure = train.getStructure(); 
-		structure.setClassIndex(structure.numAttributes() - 1); 
-		Instance current;
+						 		
 		int m_NumClasses = structure.classAttribute().numValues();
 		String [] m_ClassNames = new String [m_NumClasses];
 		
@@ -151,22 +99,8 @@ public class ModelUtils {
 			m_ClassNames[j] = structure.classAttribute().value(j);
 		}
 		
-		Instances data = train.getDataSet();
+		cls.buildClassifier(data); 
 		
-		if(DATATYPE.equals("libsvm")){
-			data.setClassIndex(0); 
-		}else{
-			data.setClassIndex(data.numAttributes() - 1); 
-		}
-		
-		cls.buildClassifier(data);
-		
-		
-		int sum=0,correct=0,wrong=0;
-		
-		test.setSource(new File(TESTFILE));
-		structure = test.getStructure(); 
-		structure.setClassIndex(structure.numAttributes() - 1);
 		while ((current = test.getNextInstance(structure)) != null) {
 		    // classifier is of type SGD.
 		    if(cls.classifyInstance(current)==current.classValue()){
