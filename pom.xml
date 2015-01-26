@@ -147,17 +147,29 @@
 			<version>0.7</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
 			<artifactId>weka-dev</artifactId>
 			<version>3.7.10</version>
-		</dependency>
+		</dependency> -->
 		
 		<dependency>
 			<groupId>de.bwaldvogel</groupId>
 			<artifactId>liblinear</artifactId>
 			<version>1.95</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.elex</groupId>
+			<artifactId>FEComm</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<!-- <dependency>
+			<groupId>com.maxmind.geoip2</groupId>
+			<artifactId>geoip2</artifactId>
+			<version>2.1.0</version>
+		</dependency> -->
 		
 	</dependencies>
 </project>

@@ -1,4 +1,4 @@
-package com.elex.ssp.mlctr.weka;
+/*package com.elex.ssp.mlctr.weka;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,11 +31,11 @@ public class ModelUtils {
 	 private static String RESULT;
 	 private static int FEATURES;
 	 
-	/**
+	*//**
 	 * @param args
 	 * @throws Exception
 	 * @throws IOException
-	 */
+	 *//*
 	public static void main(String[] args) throws IOException, Exception {
 		
 		if(args.length==4){
@@ -166,3 +166,4 @@ public class ModelUtils {
 	  }
 
 }
+*/

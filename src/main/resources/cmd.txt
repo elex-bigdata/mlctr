@@ -1,0 +1,14 @@
+sudo yum install memcached
+memcached -d -m 256 -u hadoop -l 10.1.20.242 -p 11210 -c 10 -t 4 -P /tmp/memcached0.pid
+memcached -d -m 256 -u hadoop -l 10.1.20.242 -p 11211 -c 10 -t 4 -P /tmp/memcached1.pid
+-d 后台运行
+-c 连接数
+-t 线程数
+printf "set chinatree 0 0 6\r\n123456\r\n" | nc 10.1.20.242 11210
+printf "get chinatree\r\n" | nc 10.1.20.242 11210
+
+
+
+yum install reddis
+
+create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 172800, IN_MEMORY => true},{NUMREGIONS => 5,SPLITALGO =>'UniformSplit'}
