@@ -14,13 +14,13 @@ public class HBasePutter implements Callable<String> {
 	private HTableInterface table;
 	private List<String> lines;
 	private String file;
-
-	public HBasePutter(HTableInterface tableName, List<String> lines,
-			String file) {
+	private boolean isWordVec;
+	public HBasePutter(HTableInterface tableName, List<String> lines,String file,boolean vec) {
 		super();
 		this.table = tableName;
 		this.lines = lines;
 		this.file = file;
+		this.isWordVec=vec;
 	}
 
 	@Override
@@ -29,9 +29,16 @@ public class HBasePutter implements Callable<String> {
 		long begin = System.currentTimeMillis();
 		for (String line : lines) {
 			try {
-				if(buildPut(line) != null){
-					puts.add(buildPut(line));
+				if(isWordVec){
+					if(buildWordVectorPut(line) != null){
+						puts.add(buildWordVectorPut(line));
+					}
+				}else{
+					if(buildPut(line) != null){
+						puts.add(buildPut(line));
+					}
 				}
+				
 				
 			} catch (Exception e) {
 				System.err.println("get exception:" + e.getMessage()+ ", ignore the log : " + line);
@@ -59,6 +66,16 @@ public class HBasePutter implements Callable<String> {
 		if(line.split(",").length==2){
 			Put put = new Put(Bytes.toBytes(line.split(",")[0]));
 			put.add(Bytes.toBytes("idx"),Bytes.toBytes("id"), Bytes.toBytes(line.split(",")[1]));
+			return put;
+		}		
+		return null;
+						
+	}
+	
+	private Put buildWordVectorPut(String line) {
+		if(line.split(",").length==2){
+			Put put = new Put(Bytes.toBytes(line.split(",")[0]));
+			put.add(Bytes.toBytes("idx"),Bytes.toBytes("vec"), Bytes.toBytes(line.split(",")[1]));
 			return put;
 		}		
 		return null;

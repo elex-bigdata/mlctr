@@ -44,7 +44,7 @@ public class IndexLoader {
 		files.add(IdxType.word.getDist());
 		files.add(PropertiesUtils.getIdxMergeFilePath());
 		
-		loadIndexToHbase(files);
+		loadIndexToHbase(files,false);
 	}
 
 	public static void loadIndexToHive() throws SQLException {
@@ -69,7 +69,7 @@ public class IndexLoader {
 
 	}
 
-	public static void loadIndexToHbase(List<String> files) throws IOException {
+	public static void loadIndexToHbase(List<String> files,boolean isWordVec) throws IOException {
 		ExecutorService service = new ThreadPoolExecutor(5, 20, 60,TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>());
 		long startTime = System.currentTimeMillis();
 		int batchSize = 200000;
@@ -88,12 +88,12 @@ public class IndexLoader {
 				lines.add(line);
 				total++;
 				if (lines.size() == batchSize) {
-					jobs.add(service.submit(new HBasePutter(tableName, lines,file)));
+					jobs.add(service.submit(new HBasePutter(tableName, lines,file,isWordVec)));
 					lines = new ArrayList<String>();					
 				}
 			}
 			if (lines.size() > 0) {
-				jobs.add(service.submit(new HBasePutter(tableName, lines,file)));
+				jobs.add(service.submit(new HBasePutter(tableName, lines,file,isWordVec)));
 			}
 		}
 		

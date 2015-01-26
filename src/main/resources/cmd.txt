@@ -26,7 +26,6 @@ error：如果mr执行成功，但报FAILED: Execution Error, return code 1 from
 
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.idx.FeatureValueEncoder
 
-
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.idx.IndexLoader
 
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.UserWordFeature

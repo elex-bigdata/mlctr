@@ -32,9 +32,9 @@ public class UserWordFeature {
 		String hql = "INSERT OVERWRITE LOCAL DIRECTORY '"
 				+ PropertiesUtils.getUserWordVectorPath()
 				+ "' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile"
-				+ " SELECT t.uid,concatspace(CONCAT_WS(':',cast(s.idx as string),cast(t.tfidf as string))) FROM "
+				+ " SELECT CONCAT('user_',t.uid),concatspace(CONCAT_WS(':',cast(s.idx as string),cast(t.tfidf as string))) FROM "
 				+ PropertiesUtils.getIdxHiveTableName()
-				+ " s JOIN tfidf t ON t.word = s.idx_key WHERE s.idx_type='word' GROUP BY t.uid";
+				+ " s JOIN tfidf t ON CONCAT_WS('_',t.source,t.word) = s.idx_key WHERE s.idx_type='word' GROUP BY CONCAT('user_',t.uid)";
 		stmt.execute(hql);
 		System.out.println(hql);
 		stmt.close();
@@ -50,7 +50,7 @@ public class UserWordFeature {
 			}
 		}
 		
-		IndexLoader.loadIndexToHbase(vector_files);
+		IndexLoader.loadIndexToHbase(vector_files,true);
 		
 
 	}
