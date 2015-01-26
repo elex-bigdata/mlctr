@@ -12,3 +12,10 @@ printf "get chinatree\r\n" | nc 10.1.20.242 11210
 yum install reddis
 
 create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 172800, IN_MEMORY => true},{NUMREGIONS => 5,SPLITALGO =>'UniformSplit'}
+
+
+
+
+https://github.com/elex-bigdata/mlctr.git
+
+java -cp .:mlctr-0.0.1-SNAPSHOT.jar:/usr/lib/hive/lib/* com.elex.ssp.mlctr.idx.PrepareForIndex
