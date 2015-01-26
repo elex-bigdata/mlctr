@@ -115,7 +115,7 @@ public class FeatureValueEncoder {
 		
 		for(String file:files){
 			//System.out.println(file);
-			in = new BufferedReader(new InputStreamReader(new FileInputStream(file+".idx"),"UTF-8"));
+			in = new BufferedReader(new InputStreamReader(new FileInputStream(file),"UTF-8"));
 			line = in.readLine();
 			while (line != null) {
 				out.write(line+"\r\n");
