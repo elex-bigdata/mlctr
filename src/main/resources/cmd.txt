@@ -28,3 +28,5 @@ java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 
 
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.idx.IndexLoader
+
+java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.UserWordFeature

@@ -34,7 +34,7 @@ public class UserWordFeature {
 				+ "' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile"
 				+ " SELECT t.uid,concatspace(CONCAT_WS(':',cast(s.idx as string),cast(t.tfidf as string))) FROM "
 				+ PropertiesUtils.getIdxHiveTableName()
-				+ "s JOIN tfidf t ON t.word = s.idx_key WHERE s.idx_type='word' GROUP BY t.uid";
+				+ " s JOIN tfidf t ON t.word = s.idx_key WHERE s.idx_type='word' GROUP BY t.uid";
 		stmt.execute(hql);
 		System.out.println(hql);
 		stmt.close();
