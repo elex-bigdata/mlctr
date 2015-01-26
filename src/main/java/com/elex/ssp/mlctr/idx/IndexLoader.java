@@ -44,19 +44,19 @@ public class IndexLoader {
 
 	public static void loadIndexToHive() throws SQLException {
 
-		String hql = "load data local '"+ PropertiesUtils.getIdxMergeFilePath()+ "' overwrite into table "
+		String hql = "load data local inpath '"+ PropertiesUtils.getIdxMergeFilePath()+ "' overwrite into table "
 				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='merge')";
 
 		HiveOperator.loadDataToHiveTable(hql);
 		System.out.println(hql);
 
-		hql = "load data local '" + IdxType.user.getDist()+ "' overwrite into table "
+		hql = "load data local inpath '" + IdxType.user.getDist()+ "' overwrite into table "
 				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='user')";
 
 		HiveOperator.loadDataToHiveTable(hql);
 		System.out.println(hql);
 
-		hql = "load data local '" + IdxType.word.getDist()+ "' overwrite into table "
+		hql = "load data local inpath '" + IdxType.word.getDist()+ "' overwrite into table "
 				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='word')";
 
 		HiveOperator.loadDataToHiveTable(hql);
