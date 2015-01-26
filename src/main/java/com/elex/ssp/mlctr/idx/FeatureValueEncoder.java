@@ -3,9 +3,11 @@ package com.elex.ssp.mlctr.idx;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,17 +47,20 @@ public class FeatureValueEncoder {
 		
 		BufferedReader in;
 
-		BufferedWriter out = new BufferedWriter(new FileWriter(dist));
+		OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(dist),"UTF-8");
 
 		for (File raw : files) {
-			in = new BufferedReader(new FileReader(raw));
-			line = in.readLine();
-			while (line != null) {
-				out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");
-				count++;
+			if(!raw.getName().endsWith("crc")){
+				in = new BufferedReader(new FileReader(raw));
 				line = in.readLine();
+				while (line != null) {
+					out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");
+					count++;
+					line = in.readLine();
+				}
+				in.close();
 			}
-			in.close();
+			
 		}
 
 		out.close();
@@ -111,7 +116,7 @@ public class FeatureValueEncoder {
 			in = new BufferedReader(new FileReader(file+".idx"));
 			line = in.readLine();
 			while (line != null) {
-				out.write(line);
+				out.write(line+"\r\n");
 				
 				line = in.readLine();
 			}

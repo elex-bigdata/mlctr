@@ -12,7 +12,6 @@ public class Constants {
 
 	public static final DecimalFormat df = new DecimalFormat("#.####");
 	public static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-	public static final String UDFJAR = "/home/hadoop/wuzhongju/ssp/feUDF-1.0.jar";
 	public static final String IDX_PATH = PropertiesUtils.getIdxPath();
 	
 

@@ -2,7 +2,6 @@ package com.elex.ssp.mlctr.idx;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
@@ -17,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.hbase.client.HTableInterface;
+
 import com.elex.ssp.mlctr.HbaseBasis;
 import com.elex.ssp.mlctr.HiveOperator;
 import com.elex.ssp.mlctr.PropertiesUtils;
@@ -30,7 +30,13 @@ public class IndexLoader {
 	 */
 	public static void main(String[] args) throws SQLException, IOException {
 		
-		loadIndexToHive();
+		load();
+
+	}
+	
+	
+	public static void load() throws SQLException, IOException{
+        loadIndexToHive();
 		
 		List<String> files = new ArrayList<String>();
 		
@@ -39,7 +45,6 @@ public class IndexLoader {
 		files.add(PropertiesUtils.getIdxMergeFilePath());
 		
 		loadIndexToHbase(files);
-
 	}
 
 	public static void loadIndexToHive() throws SQLException {
@@ -81,10 +86,10 @@ public class IndexLoader {
 			reader = new BufferedReader(new InputStreamReader(fis));
 			while ((line = reader.readLine()) != null) {
 				lines.add(line);
+				total++;
 				if (lines.size() == batchSize) {
 					jobs.add(service.submit(new HBasePutter(tableName, lines,file)));
-					lines = new ArrayList<String>();
-					total++;
+					lines = new ArrayList<String>();					
 				}
 			}
 			if (lines.size() > 0) {

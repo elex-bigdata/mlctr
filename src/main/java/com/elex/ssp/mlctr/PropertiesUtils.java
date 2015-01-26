@@ -78,4 +78,14 @@ public class PropertiesUtils {
 		return pop.getProperty("idx.hbase.table.name");
 	}
 
+	public static String getHiveUdfJar() {
+		
+		return pop.getProperty("hive.udf.jar");
+	}
+
+	public static String getUserWordVectorPath() {
+
+		return pop.getProperty("user.word.vector.path");
+	}
+
 }

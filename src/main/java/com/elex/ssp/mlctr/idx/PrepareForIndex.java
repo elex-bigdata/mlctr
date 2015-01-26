@@ -33,6 +33,7 @@ public class PrepareForIndex {
 		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.user.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
 			    " select distinct concat_ws('_',ft,fv) from feature_merge where ft ='user'";
 		stmt.execute(hql);
+		System.out.println(hql);
 		stmt.close();
 		
 	}
