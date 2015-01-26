@@ -62,7 +62,7 @@ public class PropertiesUtils {
 		List<String> filePathList = new ArrayList<String>();
 		for(IdxType idx:IdxType.values()){
 			if(Arrays.asList(names).contains(idx.name())){
-				filePathList.add(idx.name());
+				filePathList.add(idx.getDist());
 			}
 		}
 		return filePathList;

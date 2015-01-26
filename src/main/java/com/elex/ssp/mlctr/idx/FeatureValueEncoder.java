@@ -3,10 +3,12 @@ package com.elex.ssp.mlctr.idx;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.List;
@@ -47,11 +49,11 @@ public class FeatureValueEncoder {
 		
 		BufferedReader in;
 
-		OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(dist),"UTF-8");
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dist),"UTF-8"));
 
 		for (File raw : files) {
 			if(!raw.getName().endsWith("crc")){
-				in = new BufferedReader(new FileReader(raw));
+				in = new BufferedReader(new InputStreamReader(new FileInputStream(raw),"UTF-8"));
 				line = in.readLine();
 				while (line != null) {
 					out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");
@@ -109,11 +111,11 @@ public class FeatureValueEncoder {
 		BufferedReader in;
 
 		String line;
-		
-		BufferedWriter out = new BufferedWriter(new FileWriter(PropertiesUtils.getIdxMergeFilePath()));
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(PropertiesUtils.getIdxMergeFilePath()),"UTF-8"));
 		
 		for(String file:files){
-			in = new BufferedReader(new FileReader(file+".idx"));
+			//System.out.println(file);
+			in = new BufferedReader(new InputStreamReader(new FileInputStream(file+".idx"),"UTF-8"));
 			line = in.readLine();
 			while (line != null) {
 				out.write(line+"\r\n");
