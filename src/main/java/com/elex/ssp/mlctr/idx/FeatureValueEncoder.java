@@ -108,7 +108,7 @@ public class FeatureValueEncoder {
 		BufferedWriter out = new BufferedWriter(new FileWriter(PropertiesUtils.getIdxMergeFilePath()));
 		
 		for(String file:files){
-			in = new BufferedReader(new FileReader(file));
+			in = new BufferedReader(new FileReader(file+".idx"));
 			line = in.readLine();
 			while (line != null) {
 				out.write(line);
