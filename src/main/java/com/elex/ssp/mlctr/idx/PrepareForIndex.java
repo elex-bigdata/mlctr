@@ -103,7 +103,7 @@ public class PrepareForIndex {
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(IdxType.nation.getSrc()+"/nation.txt"),"UTF-8"));
 			String[] nations = PropertiesUtils.getNations().split(",");
 			for(String na:nations){
-				out.write("na_"+na);
+				out.write("na_"+na+"\r\n");
 			}
 			out.close();
 		}

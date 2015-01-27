@@ -3,6 +3,7 @@ package com.elex.ssp.mlctr.vector;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.common.Pair;
 
+import com.elex.ssp.TimeUtils;
 import com.elex.ssp.mlctr.Constants;
 import com.elex.ssp.mlctr.HbaseBasis;
 import com.elex.ssp.mlctr.HbaseOperator;
@@ -64,7 +66,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 		if(args[0].equals("train")){
 			String inPath= PropertiesUtils.getMachineLearningRootDir()+ "/train/input";						
 			String hql = "INSERT OVERWRITE DIRECTORY '"+ inPath + "' stored AS textfile"
-					+ " select uid,pid,ip,nation,ua,os,adid,ref,opt,impr,click from log_merge where uid is not null day>'"
+					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click from log_merge where uid is not null day>'"
 					+ Constants.getLastNDay(PropertiesUtils.getTrainDays()) + "'"
 					+ " and day <'"+Constants.getLastNDay(5)+"' and array_contains(array("
 					+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
@@ -84,7 +86,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 		}else if(args[0].equals("test")){
 			String inPath = PropertiesUtils.getMachineLearningRootDir()+ "/test/input";
 			String hql = "INSERT OVERWRITE DIRECTORY '"+ inPath + "' stored AS textfile"
-					+ " select uid,pid,ip,nation,ua,os,adid,ref,opt,impr,click" 
+					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click" 
 					+ " from log_merge where uid is not null day>'"+ Constants.getLastNDay(5) + "'"
 					+ " and array_contains(array("+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
@@ -110,27 +112,38 @@ public class FeatureVectorizer extends Configured implements Tool {
 	public static class MyMapper extends Mapper<LongWritable, Text, Text, Text> {
 		
 		private String[] values;
-		private String newKey,newVal;
+		private String newKey,newVal,t;
 		
 		@Override
 		protected void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			values = value.toString().split("\\x01");
 			
-			//uid,pid,ip,nation,ua,os,adid,ref,opt,impr,click
+			//uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click
 			
-			newKey = FeaturePrefix.user.getsName()+"_"+values[0]+"/t"
-				   + FeaturePrefix.project.getsName()+"_"+values[1]+"/t"
-				   + FeaturePrefix.area.getsName()+"_"+values[2]+"/t"
-				   + FeaturePrefix.nation.getsName()+"_"+values[3]+"/t"
-				   + FeaturePrefix.browser.getsName()+"_"+values[4]+"/t"
-				   + FeaturePrefix.os.getsName()+"_"+values[5]+"/t"
-				   + FeaturePrefix.adid.getsName()+"_"+values[6]+"/t"
-				   + FeaturePrefix.ref.getsName()+"_"+values[7]+"/t"
-				   + FeaturePrefix.opt.getsName()+"_"+values[8];
-			newVal = values[9]==null?"0":values[9]+"/t"+values[10]==null?"0":values[10];
+			try {
+				String[] tF = TimeUtils.getTimeDimension(new String[]{values[3],""});
+				for(String td:tF){
+					t=t+ FeaturePrefix.time.getsName()+"_"+td+"/t";
+				}
+				
+				newKey = FeaturePrefix.user.getsName()+"_"+values[0]+"/t"
+						   + FeaturePrefix.project.getsName()+"_"+values[1]+"/t"
+						   + FeaturePrefix.area.getsName()+"_"+Constants.getArea(values[2])+"/t"
+						   + t
+						   + FeaturePrefix.nation.getsName()+"_"+values[4]+"/t"
+						   + FeaturePrefix.browser.getsName()+"_"+values[5]+"/t"
+						   + FeaturePrefix.os.getsName()+"_"+values[6]+"/t"
+						   + FeaturePrefix.adid.getsName()+"_"+values[7]+"/t"
+						   + FeaturePrefix.ref.getsName()+"_"+values[8]+"/t"
+						   + FeaturePrefix.opt.getsName()+"_"+values[9];
+					newVal = values[10]==null?"0":values[10]+"/t"+values[11]==null?"0":values[11];
+					
+					context.write(new Text(newKey), new Text(newVal));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 			
-			context.write(new Text(newKey), new Text(newVal));
 			
 		}
 	
@@ -206,7 +219,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 			
 			if(getUserIdx(user,kv[0])!=null) fList.add(new Feature(kv[0],getUserIdx(user,kv[0]),"1"));
 			
-			for(int i=1;i<9;i++){
+			for(int i=1;i<kv.length;i++){
 				if(other.get(kv[i])!=null) fList.add(new Feature(kv[i],other.get(kv[i]),"1"));
 			}
 			
