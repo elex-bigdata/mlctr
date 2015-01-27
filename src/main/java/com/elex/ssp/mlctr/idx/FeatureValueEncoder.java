@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -56,8 +55,8 @@ public class FeatureValueEncoder {
 				in = new BufferedReader(new InputStreamReader(new FileInputStream(raw),"UTF-8"));
 				line = in.readLine();
 				while (line != null) {
-					out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");
 					count++;
+					out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");					
 					line = in.readLine();
 				}
 				in.close();

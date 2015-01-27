@@ -6,6 +6,7 @@ public enum IdxType {
 	
 	nation(Constants.IDX_PATH+"/nation",Constants.IDX_PATH+"/nation.idx"),
 	os(Constants.IDX_PATH+"/os",Constants.IDX_PATH+"/os.idx"),
+	adid(Constants.IDX_PATH+"/adid",Constants.IDX_PATH+"/adid.idx"),
 	other(Constants.IDX_PATH+"/other",Constants.IDX_PATH+"/other.idx"),
 	word(Constants.IDX_PATH+"/word",Constants.IDX_PATH+"/word.idx"),
 	user(Constants.IDX_PATH+"/user",Constants.IDX_PATH+"/user.idx");

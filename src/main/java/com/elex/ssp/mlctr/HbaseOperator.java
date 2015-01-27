@@ -29,7 +29,7 @@ public class HbaseOperator {
 	/*
 	 * 按rowkey前缀查询
 	 */
-	public List<Map<String,String>> QueryByPrefixRowkey(String tableName, byte[] prefix) {
+	public static List<Map<String,String>> QueryByPrefixRowkey(String tableName, byte[] prefix) {
 		List<Map<String,String>> list = new ArrayList<Map<String,String>>();
 
 		try {
@@ -67,9 +67,8 @@ public class HbaseOperator {
 	 * @param tableName
 	 * @throws IOException 
 	 */
-	public Map<String,String> queryOneRecord(String tableName,byte[] rowkey) throws IOException {
+	public static  Map<String,String> queryOneRecord(HTableInterface table,byte[] rowkey) throws IOException {
 
-		HTableInterface table = HbaseBasis.getConn().getTable(tableName);
 		Map<String,String> map = new HashMap<String,String>();
 		try {
 			Get scan = new Get(rowkey);// 根据rowkey查询
@@ -93,7 +92,7 @@ public class HbaseOperator {
 	 * 
 	 * @param tableName
 	 */
-	public void createTable(String tableName,String columnFamily,int maxVer) {
+	public static void createTable(String tableName,String columnFamily,int maxVer) {
 		System.out.println("start create table ......");
 		try {
 			HBaseAdmin hBaseAdmin = HbaseBasis.getAdmin();
@@ -138,7 +137,7 @@ public class HbaseOperator {
 	 * @param tableName
 	 * @throws IOException 
 	 */
-	public void dropTable(String tableName) throws IOException {
+	public static void dropTable(String tableName) throws IOException {
 		
 		HBaseAdmin admin =  HbaseBasis.getAdmin();
 		admin.disableTable(tableName);
@@ -152,7 +151,7 @@ public class HbaseOperator {
 	 * @param tablename
 	 * @param rowkey
 	 */
-	public void deleteRow(String tablename, String rowkey) {
+	public static void deleteRow(String tablename, String rowkey) {
 		try {
 			HTableInterface table = HbaseBasis.getConn().getTable(tablename);
 			Delete d1 = new Delete(rowkey.getBytes());
@@ -168,7 +167,7 @@ public class HbaseOperator {
 	 * 
 	 * @param tableName
 	 */
-	public List<Map<String,String>> QueryByColumn(String tableName, String family,
+	public static List<Map<String,String>> QueryByColumn(String tableName, String family,
 			String qualifier, String value) {
 
 		List<Map<String,String>> list = new ArrayList<Map<String,String>>(); 
@@ -205,7 +204,7 @@ public class HbaseOperator {
 	 * 
 	 * @param tableName
 	 */
-	public List<Map> QueryByKyeRange(String tableName, byte[] start,
+	public static List<Map> QueryByKyeRange(String tableName, byte[] start,
 			byte[] end) {
 
 		List<Map> list = new ArrayList<Map>(); 

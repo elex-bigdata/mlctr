@@ -88,4 +88,23 @@ public class PropertiesUtils {
 		return pop.getProperty("user.word.vector.path");
 	}
 
+	public static String getMachineLearningRootDir() {
+		return pop.getProperty("root.dir");
+	}
+
+	public static String getNations() {
+		
+		return pop.getProperty("nations");
+	}
+
+	public static int getTrainDays() {
+		
+		return Integer.parseInt(pop.getProperty("training.days"));
+	}
+
+	public static String getIdxHivePath() {
+
+		return pop.getProperty("idx.hive.path");
+	}
+
 }

@@ -31,12 +31,12 @@ public class Constants {
 	}
 	
 	
-	public static String getLastFiveDay(){
+	public static String getLastNDay(int n){
         Calendar ca = Calendar.getInstance();
 		
 		Date now = new Date();
 		ca.setTime(now);
-		ca.add(Calendar.DATE, -5);
+		ca.add(Calendar.DATE, -n);
 		return sdf.format(ca.getTime());
 	}
 	
