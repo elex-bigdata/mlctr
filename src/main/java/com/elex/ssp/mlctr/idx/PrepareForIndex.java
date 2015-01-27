@@ -28,9 +28,9 @@ public class PrepareForIndex {
 		getDistinctUserIdList();
 		getDistinctWordList();
 		getDistinctOtherList();
-		getDistinctNationList(true);
+		getDistinctNationList(false);
 		getDistinctOsList();
-		getDistinctAdidList(true);
+		getDistinctAdidList(false);
 	}
 	
 	public static void getDistinctAdidList(boolean isAll) throws SQLException {
