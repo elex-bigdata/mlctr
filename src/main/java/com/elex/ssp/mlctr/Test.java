@@ -13,11 +13,8 @@ public class Test {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		List<Integer> fList = new ArrayList<Integer>();
-		if(1==2)fList.add(1);
-		if(1==1)fList.add(2);
 		
-		System.out.println(fList.get(0));
+		System.out.println(PropertiesUtils.getMachineLearningRootDir());
 	}
 
 }

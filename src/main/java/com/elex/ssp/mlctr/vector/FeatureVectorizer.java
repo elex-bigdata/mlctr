@@ -3,6 +3,8 @@ package com.elex.ssp.mlctr.vector;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +64,8 @@ public class FeatureVectorizer extends Configured implements Tool {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		job.setInputFormatClass(TextInputFormat.class);
+		
+		String setHql = "set hive.merge.smallfiles.avgsize=160000000";//合并小于160M的小文件
 
 		if(args[0].equals("train")){
 			String inPath= PropertiesUtils.getMachineLearningRootDir()+ "/train/input";						
@@ -72,7 +76,11 @@ public class FeatureVectorizer extends Configured implements Tool {
 					+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
 			System.out.println(hql);
-			HiveOperator.executeHQL(hql);
+			Connection con = HiveOperator.getHiveConnection();
+			Statement stmt = con.createStatement();
+			stmt.execute(setHql);
+			stmt.execute(hql);
+			stmt.close();
 			
 			Path in = new Path(inPath);
 			FileInputFormat.addInputPath(job, in);
@@ -92,7 +100,12 @@ public class FeatureVectorizer extends Configured implements Tool {
 					+ " and array_contains(array("+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
 			System.out.println(hql);
-			HiveOperator.executeHQL(hql);
+			
+			Connection con = HiveOperator.getHiveConnection();
+			Statement stmt = con.createStatement();
+			stmt.execute(setHql);
+			stmt.execute(hql);
+			stmt.close();
 			
 			Path in = new Path(inPath);
 			FileInputFormat.addInputPath(job, in);
