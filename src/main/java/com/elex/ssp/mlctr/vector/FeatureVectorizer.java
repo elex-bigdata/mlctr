@@ -138,30 +138,11 @@ public class FeatureVectorizer extends Configured implements Tool {
 		protected void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			values = value.toString().split("\\x01");
-			int count = 0;
-			System.out.println(new Date());
-			//uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click
 			
-			  newKey = FeaturePrefix.user.getsName()+"_"+values[0]+"/t"
-					   + FeaturePrefix.project.getsName()+"_"+values[1]+"/t"
-					   + FeaturePrefix.area.getsName()+"_"+Constants.getArea(values[2])+"/t"					 
-					   + FeaturePrefix.nation.getsName()+"_"+values[4]+"/t"
-					   + FeaturePrefix.browser.getsName()+"_"+values[5]+"/t"
-					   + FeaturePrefix.os.getsName()+"_"+values[6]+"/t"
-					   + FeaturePrefix.adid.getsName()+"_"+values[7]+"/t"
-					   + FeaturePrefix.ref.getsName()+"_"+values[8]+"/t"
-					   + FeaturePrefix.opt.getsName()+"_"+values[9];
-				newVal = values[10]==null?"0":values[10]+"/t"+values[11]==null?"0":values[11];
 				
-				context.write(new Text(newKey), new Text(newVal));
-				count++;
-				
-				if(count%10000==0){
-					System.out.println(new Date()+"===="+count);
-				}
-				/*
-			try {
-				String[] tF = TimeUtils.getTimeDimension(new String[]{values[3],values[4]});
+			String[] tF;
+			
+				tF = TimeUtils.getTimeDimension(new String[]{values[3],values[4]});
 				if(tF.length == 3){
 					newKey = FeaturePrefix.user.getsName()+"_"+values[0]+"/t"
 							   + FeaturePrefix.project.getsName()+"_"+values[1]+"/t"
@@ -179,10 +160,8 @@ public class FeatureVectorizer extends Configured implements Tool {
 						
 						context.write(new Text(newKey), new Text(newVal));
 				}
-				
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}*/
+			
+			
 			
 			
 		}
@@ -247,8 +226,11 @@ public class FeatureVectorizer extends Configured implements Tool {
 			int impr=0,click=0;
 			for(Text v:values){
 				kv = v.toString().split("\t");
-				impr = impr+kv[0]==null?0:Integer.parseInt(kv[0]);
-				click = click+kv[1]==null?0:Integer.parseInt(kv[1]);
+				if(kv.length==2){
+					impr = impr+kv[0]==null?0:Integer.parseInt(kv[0]);
+					click = click+kv[1]==null?0:Integer.parseInt(kv[1]);
+				}
+				
 			}
 			
 			if(click>=impr){
