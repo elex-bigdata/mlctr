@@ -262,20 +262,25 @@ public class FeatureVectorizer extends Configured implements Tool {
 		
 		private void getUserWordVector(Map<String, Pair<String, String>> userInfoMap, String uid,List<Feature> list) {
 			
-			String[] vector = userInfoMap.get(uid).getSecond().split(" ");
-			for(String w:vector){
-				String[] kv = w.split(":");
-				if(kv.length==2){					
-					if(word.get(kv[0])!=null) list.add(new Feature(word.get(kv[0]),kv[0],kv[1]));
+			String[] vector;
+			if(userInfoMap.get(uid) != null){
+				if(userInfoMap.get(uid).getSecond() != null){
+					vector = userInfoMap.get(uid).getSecond().split(" ");
+					for(String w:vector){
+						String[] kv = w.split(":");
+						if(kv.length==2){					
+							if(word.get(kv[0])!=null) list.add(new Feature(word.get(kv[0]),kv[0],kv[1]));
+						}
+						
+					}
 				}
-				
 			}
+			
 		}
 
 
 		private String getUserIdx(Map<String, Pair<String, String>> userInfoMap,String uid) {
-			String idx;
-			idx = userInfoMap.get(uid).getFirst();
+			String idx = userInfoMap.get(uid)==null?null:userInfoMap.get(uid).getFirst();
 			if(idx != null){
 				return idx;
 			}else{
