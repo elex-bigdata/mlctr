@@ -71,8 +71,9 @@ public class FeatureVectorizer extends Configured implements Tool {
 					+ " and day <'"+Constants.getLastNDay(5)+"' and array_contains(array("
 					+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
-			HiveOperator.executeHQL(hql);
 			System.out.println(hql);
+			HiveOperator.executeHQL(hql);
+			
 			Path in = new Path(inPath);
 			FileInputFormat.addInputPath(job, in);
 			
@@ -90,8 +91,9 @@ public class FeatureVectorizer extends Configured implements Tool {
 					+ " from log_merge where uid is not null and  day>'"+ Constants.getLastNDay(5) + "'"
 					+ " and array_contains(array("+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
-			HiveOperator.executeHQL(hql);
 			System.out.println(hql);
+			HiveOperator.executeHQL(hql);
+			
 			Path in = new Path(inPath);
 			FileInputFormat.addInputPath(job, in);
 			
