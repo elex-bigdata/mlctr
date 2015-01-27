@@ -53,6 +53,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 	@Override
 	public int run(String[] args) throws Exception {
 		Configuration conf = new Configuration();
+		conf.set("mapred.min.split.size", "268435456");
 		FileSystem fs = FileSystem.get(conf);
 
 		Job job = Job.getInstance(conf, "FeatureVectorizer");
