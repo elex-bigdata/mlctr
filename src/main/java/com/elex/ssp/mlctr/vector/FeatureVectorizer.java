@@ -66,7 +66,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 		if(args[0].equals("train")){
 			String inPath= PropertiesUtils.getMachineLearningRootDir()+ "/train/input";						
 			String hql = "INSERT OVERWRITE DIRECTORY '"+ inPath + "'"
-					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click from log_merge where uid is not null day>'"
+					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click from log_merge where uid is not null and day>'"
 					+ Constants.getLastNDay(PropertiesUtils.getTrainDays()) + "'"
 					+ " and day <'"+Constants.getLastNDay(5)+"' and array_contains(array("
 					+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
@@ -87,7 +87,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 			String inPath = PropertiesUtils.getMachineLearningRootDir()+ "/test/input";
 			String hql = "INSERT OVERWRITE DIRECTORY '"+ inPath + "'"
 					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click" 
-					+ " from log_merge where uid is not null day>'"+ Constants.getLastNDay(5) + "'"
+					+ " from log_merge where uid is not null and  day>'"+ Constants.getLastNDay(5) + "'"
 					+ " and array_contains(array("+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
 			HiveOperator.executeHQL(hql);
