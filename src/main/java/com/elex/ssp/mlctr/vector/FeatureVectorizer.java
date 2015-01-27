@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,6 @@ public class FeatureVectorizer extends Configured implements Tool {
 	@Override
 	public int run(String[] args) throws Exception {
 		Configuration conf = new Configuration();
-		conf.set("mapred.min.split.size", "268435456");
 		FileSystem fs = FileSystem.get(conf);
 
 		Job job = Job.getInstance(conf, "FeatureVectorizer");
@@ -76,12 +76,15 @@ public class FeatureVectorizer extends Configured implements Tool {
 					+ " and day <'"+Constants.getLastNDay(5)+"' and array_contains(array("
 					+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
-			System.out.println(hql);
-			Connection con = HiveOperator.getHiveConnection();
-			Statement stmt = con.createStatement();
-			stmt.execute(setHql);
-			stmt.execute(hql);
-			stmt.close();
+			if(!args[1].equals("skip")){
+				System.out.println(hql);
+				Connection con = HiveOperator.getHiveConnection();
+				Statement stmt = con.createStatement();
+				stmt.execute(setHql);
+				stmt.execute(hql);
+				stmt.close();
+			}
+			
 			
 			Path in = new Path(inPath);
 			FileInputFormat.addInputPath(job, in);
@@ -100,13 +103,14 @@ public class FeatureVectorizer extends Configured implements Tool {
 					+ " from log_merge where uid is not null and  day>'"+ Constants.getLastNDay(5) + "'"
 					+ " and array_contains(array("+ PropertiesUtils.getNations() + "),nation) and adid like '5%'";
 			
-			System.out.println(hql);
-			
-			Connection con = HiveOperator.getHiveConnection();
-			Statement stmt = con.createStatement();
-			stmt.execute(setHql);
-			stmt.execute(hql);
-			stmt.close();
+			if(!args[1].equals("skip")){
+				System.out.println(hql);
+				Connection con = HiveOperator.getHiveConnection();
+				Statement stmt = con.createStatement();
+				stmt.execute(setHql);
+				stmt.execute(hql);
+				stmt.close();
+			}
 			
 			Path in = new Path(inPath);
 			FileInputFormat.addInputPath(job, in);
@@ -134,9 +138,28 @@ public class FeatureVectorizer extends Configured implements Tool {
 		protected void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			values = value.toString().split("\\x01");
-			
+			int count = 0;
+			System.out.println(new Date());
 			//uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click
 			
+			  newKey = FeaturePrefix.user.getsName()+"_"+values[0]+"/t"
+					   + FeaturePrefix.project.getsName()+"_"+values[1]+"/t"
+					   + FeaturePrefix.area.getsName()+"_"+Constants.getArea(values[2])+"/t"					 
+					   + FeaturePrefix.nation.getsName()+"_"+values[4]+"/t"
+					   + FeaturePrefix.browser.getsName()+"_"+values[5]+"/t"
+					   + FeaturePrefix.os.getsName()+"_"+values[6]+"/t"
+					   + FeaturePrefix.adid.getsName()+"_"+values[7]+"/t"
+					   + FeaturePrefix.ref.getsName()+"_"+values[8]+"/t"
+					   + FeaturePrefix.opt.getsName()+"_"+values[9];
+				newVal = values[10]==null?"0":values[10]+"/t"+values[11]==null?"0":values[11];
+				
+				context.write(new Text(newKey), new Text(newVal));
+				count++;
+				
+				if(count%10000==0){
+					System.out.println(new Date()+"===="+count);
+				}
+				/*
 			try {
 				String[] tF = TimeUtils.getTimeDimension(new String[]{values[3],values[4]});
 				if(tF.length == 3){
@@ -159,7 +182,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 				
 			} catch (ParseException e) {
 				e.printStackTrace();
-			}
+			}*/
 			
 			
 		}
