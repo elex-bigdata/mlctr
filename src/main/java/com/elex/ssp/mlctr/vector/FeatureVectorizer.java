@@ -70,17 +70,11 @@ public class FeatureVectorizer extends Configured implements Tool {
 		String setHql = "set hive.merge.smallfiles.avgsize=160000000";// 合并小于160M的小文件
 
 		if (args[0].equals("train")) {
-			String inPath = PropertiesUtils.getMachineLearningRootDir()
-					+ "/train/input";
-			String hql = "INSERT OVERWRITE DIRECTORY '"
-					+ inPath
-					+ "'"
+			String inPath = PropertiesUtils.getMachineLearningRootDir()+ "/train/input";
+			String hql = "INSERT OVERWRITE DIRECTORY '"+ inPath+ "'"
 					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click from log_merge where uid is not null and day>'"
-					+ Constants.getLastNDay(PropertiesUtils.getTrainDays())
-					+ "'" + " and day <'" + Constants.getLastNDay(5)
-					+ "' and array_contains(array("
-					+ PropertiesUtils.getNations()
-					+ "),nation) and adid like '5%'";
+					+ Constants.getLastNDay(PropertiesUtils.getTrainDays())+ "'" + " and day <'" + Constants.getLastNDay(5)
+					+ "' and array_contains(array("+ PropertiesUtils.getNations()+ "),nation) and adid like '5%'";
 
 			if (!args[1].equals("skip")) {
 				System.out.println(hql);
@@ -95,25 +89,18 @@ public class FeatureVectorizer extends Configured implements Tool {
 			FileInputFormat.addInputPath(job, in);
 
 			job.setOutputFormatClass(TextOutputFormat.class);
-			MultipleOutputs.addNamedOutput(job, "plain",
-					TextOutputFormat.class, Text.class, Text.class);
-			String output = PropertiesUtils.getMachineLearningRootDir()
-					+ "/train/output";
+			MultipleOutputs.addNamedOutput(job, "plain",TextOutputFormat.class, Text.class, Text.class);
+			String output = PropertiesUtils.getMachineLearningRootDir()+ "/train/output";
 			HdfsUtil.delFile(fs, output);
 			FileOutputFormat.setOutputPath(job, new Path(output));
 
 		} else if (args[0].equals("test")) {
-			String inPath = PropertiesUtils.getMachineLearningRootDir()
-					+ "/test/input";
-			String hql = "INSERT OVERWRITE DIRECTORY '"
-					+ inPath
-					+ "'"
+			String inPath = PropertiesUtils.getMachineLearningRootDir()+ "/test/input";
+			String hql = "INSERT OVERWRITE DIRECTORY '"+ inPath+ "'"
 					+ " select uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click"
 					+ " from log_merge where uid is not null and  day>'"
-					+ Constants.getLastNDay(5) + "'"
-					+ " and array_contains(array("
-					+ PropertiesUtils.getNations()
-					+ "),nation) and adid like '5%'";
+					+ Constants.getLastNDay(5) + "'"+ " and array_contains(array("
+					+ PropertiesUtils.getNations()+ "),nation) and adid like '5%'";
 
 			if (!args[1].equals("skip")) {
 				System.out.println(hql);
@@ -128,16 +115,13 @@ public class FeatureVectorizer extends Configured implements Tool {
 			FileInputFormat.addInputPath(job, in);
 
 			job.setOutputFormatClass(TextOutputFormat.class);
-			MultipleOutputs.addNamedOutput(job, "plain",
-					TextOutputFormat.class, Text.class, Text.class);
-			String output = PropertiesUtils.getMachineLearningRootDir()
-					+ "/test/output";
+			MultipleOutputs.addNamedOutput(job, "plain",TextOutputFormat.class, Text.class, Text.class);
+			String output = PropertiesUtils.getMachineLearningRootDir()+ "/test/output";
 			HdfsUtil.delFile(fs, output);
 			FileOutputFormat.setOutputPath(job, new Path(output));
 
 		} else {
-			System.err
-					.println("FeatureVectorizer wrong arg value!!!" + args[0]);
+			System.err.println("FeatureVectorizer wrong arg value!!!" + args[0]);
 		}
 
 		return job.waitForCompletion(true) ? 0 : 1;
@@ -151,6 +135,9 @@ public class FeatureVectorizer extends Configured implements Tool {
 				throws IOException, InterruptedException {
 			String[] values = value.toString().split("\\x01");
 
+			//uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click
+			//uid,pid,ip,time,nation,ua,os,adid,ref,opt,impr,click
+			int impr=0,click=0;
 			String[] tF = TimeUtils.getTimeDimension(new String[] { values[3],values[4] });
 			if (tF.length == 3) {
 				String newKey = FeaturePrefix.user.getsName() + "_" + values[0] + "\t"
@@ -165,7 +152,11 @@ public class FeatureVectorizer extends Configured implements Tool {
 						+ FeaturePrefix.adid.getsName()+ "_" + values[7] + "\t" 
 						+ FeaturePrefix.ref.getsName()+ "_" + values[8] + "\t" 
 						+ FeaturePrefix.opt.getsName()+ "_" + values[9];
-				String newVal = values[10] == null ? "0" : values[10] + "\t"+ values[11] == null ? "0" : values[11];
+				
+				impr = values[10] == null ? 0 : Integer.parseInt(values[10]);
+				click = values[11] == null ? 0 : Integer.parseInt(values[11]);
+				
+				String newVal = impr + "\t"+ click;
 
 				context.write(new Text(newKey), new Text(newVal));
 			}
@@ -222,20 +213,23 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 			StringBuffer idStr = new StringBuffer(100);
 			StringBuffer plainStr = new StringBuffer(100);
-
 			List<Feature> fList = new ArrayList<Feature>();
-			int impr = 0, click = 0;
+			int impr = 0, click = 0, imprSum = 0, clickSum = 0;
+			
+			
 			for (Text v : values) {
 				kv = v.toString().split("\t");
 				if (kv.length == 2) {
-					impr = impr + kv[0] == null ? 0 : Integer.parseInt(kv[0]);
-					click = click + kv[1] == null ? 0 : Integer.parseInt(kv[1]);
+					impr = kv[0] == null ? 0 : Integer.parseInt(kv[0]);
+					click = kv[1] == null ? 0 : Integer.parseInt(kv[1]);
 				}
+				imprSum = imprSum + impr;
+				clickSum = clickSum + click;
 
 			}
 
-			if (click >= impr) {
-				click = impr;
+			if (clickSum >= imprSum) {
+				clickSum = imprSum;
 			}
 
 			kv = key.toString().split("\t");
@@ -263,9 +257,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 			plain.write("plain", new Text(plainStr.toString()), null);
 		}
 
-		private void getUserWordVector(
-				Map<String, Pair<String, String>> userInfoMap, String uid,
-				List<Feature> list) {
+		private void getUserWordVector(Map<String, Pair<String, String>> userInfoMap, String uid,List<Feature> list) {
 
 			String[] vector;
 			if (userInfoMap.get(uid) != null) {
@@ -275,8 +267,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 						String[] kv = w.split(":");
 						if (kv.length == 2) {
 							if (word.get(kv[0]) != null)
-								list.add(new Feature(word.get(kv[0]), kv[0],
-										kv[1]));
+								list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
 						}
 
 					}
@@ -285,20 +276,16 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 		}
 
-		private String getUserIdx(
-				Map<String, Pair<String, String>> userInfoMap, String uid) {
-			String idx = userInfoMap.get(uid) == null ? null : userInfoMap.get(
-					uid).getFirst();
+		private String getUserIdx(Map<String, Pair<String, String>> userInfoMap, String uid) {
+			String idx = userInfoMap.get(uid) == null ? null : userInfoMap.get(uid).getFirst();
 			if (idx != null) {
 				return idx;
 			} else {
 				try {
-					Map<String, String> result = HbaseOperator.queryOneRecord(
-							idxTable, Bytes.toBytes(uid));
+					Map<String, String> result = HbaseOperator.queryOneRecord(idxTable, Bytes.toBytes(uid));
 					if (userInfoMap.size() < 1000000) {
 						userInfoMap.put(uid,
-								new Pair<String, String>(result.get("idx"),
-										result.get("vec")));
+								new Pair<String, String>(result.get("idx"),result.get("vec")));
 					}
 					return result.get("idx");
 

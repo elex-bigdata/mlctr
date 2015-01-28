@@ -32,7 +32,7 @@ public class UserWordFeature {
 		String hql = "INSERT OVERWRITE LOCAL DIRECTORY '"
 				+ PropertiesUtils.getUserWordVectorPath()
 				+ "' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile"
-				+ " SELECT CONCAT('u_',t.uid),concatspace(CONCAT_WS(':',cast(s.idx as string),cast(t.tfidf as string))) FROM "
+				+ " SELECT CONCAT('u_',t.uid),concatspace(CONCAT_WS(':',cast(s.idx as string),cast(round(t.tfidf,4) as string))) FROM "
 				+ PropertiesUtils.getIdxHiveTableName()
 				+ " s JOIN tfidf t ON CONCAT_WS('_',t.source,t.word) = s.idx_key WHERE s.idx_type='word' GROUP BY CONCAT('u_',t.uid)";
 		stmt.execute(hql);
