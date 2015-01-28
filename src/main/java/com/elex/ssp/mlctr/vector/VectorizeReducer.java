@@ -176,7 +176,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			try {
 				Map<String, String> result = HbaseOperator.queryOneRecord(idxTable, Bytes.toBytes(uid));
 				
-				if (userInfoMap.size() < 1000000) {
+				if (userInfoMap.size() < PropertiesUtils.getCacheUserNumber()) {
 					
 					userInfoMap.put(uid,new Pair<String, String>(result.get("idx"),result.get("vec")));
 				}

@@ -107,4 +107,14 @@ public class PropertiesUtils {
 		return pop.getProperty("idx.hive.path");
 	}
 
+	public static int getCacheUserNumber() {
+		
+		return Integer.parseInt(pop.getProperty("cache.user.number"));
+	}
+	
+    public static int getVectorizeReducerNumber() {
+		
+		return Integer.parseInt(pop.getProperty("vectorize.reducer.number"));
+	}
+
 }
