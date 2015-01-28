@@ -38,3 +38,5 @@ hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
 
 ln -s /data1/ssp/mlctr/ ssp
 
+cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
+

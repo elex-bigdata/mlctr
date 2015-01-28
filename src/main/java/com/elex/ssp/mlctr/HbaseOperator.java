@@ -72,7 +72,6 @@ public class HbaseOperator {
 		Map<String,String> map = new HashMap<String,String>();
 		try {
 			Get scan = new Get(rowkey);// 根据rowkey查询
-			scan.setMaxVersions();
 			Result r = table.get(scan);
 			if(!r.isEmpty()){
 				map.put("rowKey", new String(r.getRow()));
