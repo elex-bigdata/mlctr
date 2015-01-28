@@ -34,6 +34,9 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private HTableInterface idxTable;
 	private String[] kv;
 	private String unionKey;
+	Map<String,Result> result = new HashMap<String,Result>();
+	int impr = 0, click = 0;
+	
 	@Override
 	protected void setup(Context context) throws IOException,InterruptedException {
 		super.setup(context);
@@ -79,9 +82,9 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			throws IOException, InterruptedException {
 
 		
-		Map<String,Result> result = new HashMap<String,Result>();
-						
-		int impr = 0, click = 0;
+		result.clear();						
+		impr = 0;
+		click = 0;
 				
 		for (Text v : values) {
 			
@@ -152,11 +155,12 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private void getUserWordVector(Map<String, Pair<String, String>> userInfoMap, String uid,List<Feature> list) {
 
 		String[] vector;
+		String[] kv;
 		if (userInfoMap.get(uid) != null) {
 			if (userInfoMap.get(uid).getSecond() != null) {
 				vector = userInfoMap.get(uid).getSecond().split(" ");
 				for (String w : vector) {
-					String[] kv = w.split(":");
+					 kv = w.split(":");
 					if (kv.length == 2) {
 						if (word.get(kv[0]) != null)
 							list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
@@ -178,10 +182,10 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 				
 				if (userInfoMap.size() < PropertiesUtils.getCacheUserNumber()) {
 					
-					userInfoMap.put(uid,new Pair<String, String>(result.get("idx"),result.get("vec")));
+					userInfoMap.put(uid,new Pair<String, String>(result.get("id"),result.get("vec")));
 				}
 				
-				return result.get("idx");
+				return result.get("id");
 
 			} catch (IOException e) {
 				e.printStackTrace();

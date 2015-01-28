@@ -234,9 +234,10 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 			kv = key.toString().split("\t");
 
-			if (getUserIdx(user, kv[0]) != null)
+			if (getUserIdx(user, kv[0]) != null){
 				fList.add(new Feature(kv[0], getUserIdx(user, kv[0]), "1"));
-
+			}
+				
 			for (int i = 1; i < kv.length; i++) {
 				if (other.get(kv[i]) != null)
 					fList.add(new Feature(kv[i], other.get(kv[i]), "1"));
@@ -260,11 +261,12 @@ public class FeatureVectorizer extends Configured implements Tool {
 		private void getUserWordVector(Map<String, Pair<String, String>> userInfoMap, String uid,List<Feature> list) {
 
 			String[] vector;
+			String[] kv;
 			if (userInfoMap.get(uid) != null) {
 				if (userInfoMap.get(uid).getSecond() != null) {
 					vector = userInfoMap.get(uid).getSecond().split(" ");
 					for (String w : vector) {
-						String[] kv = w.split(":");
+						 kv = w.split(":");
 						if (kv.length == 2) {
 							if (word.get(kv[0]) != null)
 								list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
@@ -286,10 +288,10 @@ public class FeatureVectorizer extends Configured implements Tool {
 					
 					if (userInfoMap.size() < PropertiesUtils.getCacheUserNumber()) {
 						
-						userInfoMap.put(uid,new Pair<String, String>(result.get("idx"),result.get("vec")));
+						userInfoMap.put(uid,new Pair<String, String>(result.get("id"),result.get("vec")));
 					}
 					
-					return result.get("idx");
+					return result.get("id");
 
 				} catch (IOException e) {
 					e.printStackTrace();
