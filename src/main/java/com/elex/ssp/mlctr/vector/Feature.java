@@ -62,7 +62,7 @@ public class Feature implements Serializable,Comparable<Feature> {
 
 	@Override
 	public int compareTo(Feature o) {
-		return Integer.parseInt(o.getIdx())-Integer.parseInt(this.idx);
+		return Integer.parseInt(this.idx)-Integer.parseInt(o.getIdx());
 		
 	}
 
