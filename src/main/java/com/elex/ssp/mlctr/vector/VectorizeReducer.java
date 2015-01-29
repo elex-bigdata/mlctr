@@ -156,11 +156,11 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			if(getUserDTO(user,key.toString()) != null){
 				if(getUserDTO(user,key.toString()).getIdStr() != null){
-					idText.set(idStr.toString());
+					idText.set(idStr.append(getUserDTO(user,key.toString()).getIdStr()).toString());
 				}
 				
 				if(getUserDTO(user,key.toString()).getPlainStr() != null){
-					plainText.set(plainStr.toString());
+					plainText.set(plainStr.append(getUserDTO(user,key.toString()).getPlainStr()).toString());
 				}
 				
 			}else{
