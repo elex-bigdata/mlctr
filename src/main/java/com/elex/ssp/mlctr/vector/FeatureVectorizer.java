@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.Statement;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +63,7 @@ public class FeatureVectorizer extends Configured implements Tool {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		job.setInputFormatClass(TextInputFormat.class);
-		job.setNumReduceTasks(PropertiesUtils.getVectorizeReducerNumber());
+		job.setNumReduceTasks(Integer.parseInt(args[2]));
 
 		String setHql = "set hive.merge.smallfiles.avgsize=160000000";// 合并小于160M的小文件
 

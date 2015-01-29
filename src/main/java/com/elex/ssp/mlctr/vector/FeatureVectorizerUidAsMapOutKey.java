@@ -46,7 +46,7 @@ public class FeatureVectorizerUidAsMapOutKey extends Configured implements Tool 
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		job.setInputFormatClass(TextInputFormat.class);
-		job.setNumReduceTasks(PropertiesUtils.getVectorizeReducerNumber());
+		job.setNumReduceTasks(Integer.parseInt(args[2]));
 		//job.setPartitionerClass(VectorizePartitioner.class);
 
 		String setHql = "set hive.merge.smallfiles.avgsize=160000000";// 合并小于160M的小文件

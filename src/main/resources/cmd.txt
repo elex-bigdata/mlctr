@@ -32,6 +32,8 @@ java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 
 hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizer test skip
 
+hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizerUidAsMapOutKey test skip
+
 hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* test_id.txt
 
 hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
@@ -39,4 +41,20 @@ hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
 ln -s /data1/ssp/mlctr/ ssp
 
 cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
+
+./liblinear_modified/train -s 6 /data1/ssp/mlctr/test_id.txt model/test.model
+
+iter   1  #CD cycles 1
+iter   2  #CD cycles 1
+iter   3  #CD cycles 1
+iter   4  #CD cycles 1
+iter   5  #CD cycles 1
+iter   6  #CD cycles 3
+iter   7  #CD cycles 1
+iter   8  #CD cycles 1
+=========================
+optimization finished, #iter = 8
+Objective value = 423546.435913
+#nonzeros/#features = 7115/10055495
+
 
