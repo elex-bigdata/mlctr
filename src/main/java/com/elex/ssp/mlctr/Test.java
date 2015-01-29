@@ -24,13 +24,9 @@ public class Test {
 		
 
 		
-		StringBuffer a = new StringBuffer(100);
-		a.append("123").append("abc");
-		System.out.println(a.toString());
-		a.setLength(0);
-		a.append("xyz");
-		System.out.println(a.toString());
-		
+		if(Double.parseDouble("0")==0D){
+			System.out.println(true);
+		}
 		
 		
 		

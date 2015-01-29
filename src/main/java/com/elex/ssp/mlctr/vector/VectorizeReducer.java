@@ -29,7 +29,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private Map<String, Feature> other = new HashMap<String, Feature>();// key-idx
 	private Map<String, String> word = new HashMap<String, String>();// idx-key
 	private Map<String, UserDTO> user = new HashMap<String, UserDTO>();
-	private MultipleOutputs<Text, Text> plain;
+	private MultipleOutputs<Text, Text> plain,id_positive,id_negtive;
 	private FileSystem fs;
 	private HTableInterface idxTable;
 	private String[] kv;
@@ -44,7 +44,9 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	@Override
 	protected void setup(Context context) throws IOException,InterruptedException {
 		super.setup(context);
-		plain = new MultipleOutputs<Text, Text>(context);// 初始化mos
+		plain = new MultipleOutputs<Text, Text>(context);// 初始化
+		id_positive = new MultipleOutputs<Text, Text>(context);
+		id_negtive = new MultipleOutputs<Text, Text>(context);
 		fs = FileSystem.get(context.getConfiguration());
 		String otherPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=merge/merge.txt";
 		String wordPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=word/word.idx";
@@ -169,7 +171,15 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 				plainText.set(plainStr.toString());								
 			}
 			
-			context.write(idText, null);
+			if(entry.getValue().getClick()==0){
+				
+				id_negtive.write("id_negtive", idText, null);
+				
+			}else{
+				
+				id_positive.write("id_positive",idText, null);
+			}
+			
 			plain.write("plain", plainText, null);			
 		}
 			
@@ -207,7 +217,19 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 						 kv = w.split(":");
 						if (kv.length == 2) {
 							if (word.get(kv[0]) != null)
-								list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
+								if(PropertiesUtils.getThreshold() == 0D){
+									list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
+								}else{
+									try{
+										if(Double.parseDouble(kv[1])>PropertiesUtils.getThreshold()){
+											list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
+										}
+									}catch(NumberFormatException ne){
+										
+									}
+									
+								}
+								
 						}
 
 					}
@@ -234,6 +256,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			InterruptedException {
 		super.cleanup(context);
 		plain.close();// 释放资源
+		id_positive.close();
+		id_negtive.close();
 		idxTable.close();
 	}
 

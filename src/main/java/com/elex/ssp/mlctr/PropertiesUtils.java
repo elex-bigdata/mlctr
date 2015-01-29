@@ -107,14 +107,9 @@ public class PropertiesUtils {
 		return pop.getProperty("idx.hive.path");
 	}
 
-	public static int getCacheUserNumber() {
+	public static double getThreshold() {
 		
-		return Integer.parseInt(pop.getProperty("cache.user.number"));
-	}
-	
-    public static int getVectorizeReducerNumber() {
-		
-		return Integer.parseInt(pop.getProperty("vectorize.reducer.number"));
+		return Double.parseDouble(pop.getProperty("word.tfidf.threshold"));
 	}
 
 }

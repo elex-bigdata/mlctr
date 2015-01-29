@@ -30,7 +30,7 @@ java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.UserWordFeature
 
-hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizer train noskip 20
+hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizer train skip 20
 
 hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* test_id.txt
 
