@@ -36,6 +36,10 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private String unionKey;
 	private Map<String,Result> resultMap = new HashMap<String,Result>();
 	private int impr = 0, click = 0;
+	private Text idText = new Text();
+	private Text plainText = new Text();
+	private StringBuffer idStr = new StringBuffer(100);
+	private StringBuffer plainStr = new StringBuffer(100);
 	
 	@Override
 	protected void setup(Context context) throws IOException,InterruptedException {
@@ -137,8 +141,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			entry.getValue().adjustImprClick();	
 			
-			StringBuffer idStr = new StringBuffer(100);
-			StringBuffer plainStr = new StringBuffer(100);
+			idStr.setLength(0);
+			plainStr.setLength(0);
 			
 			idStr.append(entry.getValue().getImpr() + " " + entry.getValue().getClick()+ " ");
 			
@@ -151,20 +155,24 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			
 			if(getUserDTO(user,key.toString()) != null){
-				if(getUserDTO(user,key.toString()).getWordList() != null){
-					for (Feature f : getUserDTO(user,key.toString()).getWordList()) {
-						idStr.append(f.getIdx() + ":" + f.getValue() + " ");
-						plainStr.append(f.getKey() + ":" + f.getValue() + " ");
-					}
-				}				
+				if(getUserDTO(user,key.toString()).getIdStr() != null){
+					idText.set(idStr.toString());
+				}
+				
+				if(getUserDTO(user,key.toString()).getPlainStr() != null){
+					plainText.set(plainStr.toString());
+				}
+				
+			}else{
+				
+				idText.set(idStr.toString());
+				plainText.set(plainStr.toString());								
 			}
-
-			context.write(new Text(idStr.toString()), null);
-			plain.write("plain", new Text(plainStr.toString()), null);
+			
+			context.write(idText, null);
+			plain.write("plain", plainText, null);			
 		}
-	
-
-		
+			
 	}
 	
 	private UserDTO getUserDTO(Map<String, UserDTO> userInfoMap, String u_name) {

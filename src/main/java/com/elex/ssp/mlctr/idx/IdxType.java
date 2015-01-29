@@ -4,6 +4,7 @@ import com.elex.ssp.mlctr.Constants;
 
 public enum IdxType {
 	
+	//以下顺序不能改动，需要增加索引类型时请在nation前加
 	nation(Constants.IDX_PATH+"/nation",Constants.IDX_PATH+"/nation.idx"),
 	os(Constants.IDX_PATH+"/os",Constants.IDX_PATH+"/os.idx"),
 	adid(Constants.IDX_PATH+"/adid",Constants.IDX_PATH+"/adid.idx"),
