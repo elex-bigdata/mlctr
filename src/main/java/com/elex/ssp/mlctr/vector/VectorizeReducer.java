@@ -29,7 +29,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private Map<String, Feature> other = new HashMap<String, Feature>();// key-idx
 	private Map<String, String> word = new HashMap<String, String>();// idx-key
 	private Map<String, UserDTO> user = new HashMap<String, UserDTO>();
-	private MultipleOutputs<Text, Text> plain,id_positive,id_negtive;
+	private MultipleOutputs<Text, Text> plain,idpositive,idnegtive;
 	private FileSystem fs;
 	private HTableInterface idxTable;
 	private String[] kv;
@@ -45,8 +45,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	protected void setup(Context context) throws IOException,InterruptedException {
 		super.setup(context);
 		plain = new MultipleOutputs<Text, Text>(context);// 初始化
-		id_positive = new MultipleOutputs<Text, Text>(context);
-		id_negtive = new MultipleOutputs<Text, Text>(context);
+		idpositive = new MultipleOutputs<Text, Text>(context);
+		idnegtive = new MultipleOutputs<Text, Text>(context);
 		fs = FileSystem.get(context.getConfiguration());
 		String otherPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=merge/merge.txt";
 		String wordPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=word/word.idx";
@@ -173,11 +173,11 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			if(entry.getValue().getClick()==0){
 				
-				id_negtive.write("id_negtive", idText, null);
+				idnegtive.write("idnegtive", idText, null);
 				
 			}else{
 				
-				id_positive.write("id_positive",idText, null);
+				idpositive.write("idpositive",idText, null);
 			}
 			
 			plain.write("plain", plainText, null);			
@@ -256,8 +256,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			InterruptedException {
 		super.cleanup(context);
 		plain.close();// 释放资源
-		id_positive.close();
-		id_negtive.close();
+		idpositive.close();
+		idnegtive.close();
 		idxTable.close();
 	}
 
