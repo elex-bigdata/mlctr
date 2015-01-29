@@ -18,7 +18,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
-import org.apache.mahout.common.Pair;
 
 import com.elex.ssp.mlctr.HbaseBasis;
 import com.elex.ssp.mlctr.HbaseOperator;
@@ -26,16 +25,16 @@ import com.elex.ssp.mlctr.PropertiesUtils;
 
 public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
-	private Map<String, String> other = new HashMap<String, String>();// key-idx
+	private Map<String, Feature> other = new HashMap<String, Feature>();// key-idx
 	private Map<String, String> word = new HashMap<String, String>();// idx-key
-	private Map<String, Pair<String, String>> user = new HashMap<String, Pair<String, String>>();// uid,<idx,wordvector>
+	private Map<String, UserDTO> user = new HashMap<String, UserDTO>();
 	private MultipleOutputs<Text, Text> plain;
 	private FileSystem fs;
 	private HTableInterface idxTable;
 	private String[] kv;
 	private String unionKey;
-	Map<String,Result> result = new HashMap<String,Result>();
-	int impr = 0, click = 0;
+	private Map<String,Result> result = new HashMap<String,Result>();
+	private int impr = 0, click = 0;
 	
 	@Override
 	protected void setup(Context context) throws IOException,InterruptedException {
@@ -44,8 +43,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 		fs = FileSystem.get(context.getConfiguration());
 		String otherPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=merge/merge.txt";
 		String wordPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=word/word.idx";
-		readIdxMap(fs, otherPath, other, false);
-		readIdxMap(fs, wordPath, word, true);
+		readOtherFeature(fs, otherPath, other);
+		readIdxMap(fs, wordPath, word);
 		idxTable = HbaseBasis.getConn().getTable(PropertiesUtils.getIdxHbaseTable());
 	}
 
@@ -54,22 +53,33 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	 * @param fs
 	 * @param src
 	 * @param map
-	 * @param switch_kv 用于控制是否交换key和idx的顺序，word哈希表需要的是idx到key的倒排索引
+
 	 * @throws IOException
 	 */
-	private void readIdxMap(FileSystem fs, String src,Map<String, String> map, boolean switch_kv) throws IOException {
+	private void readIdxMap(FileSystem fs, String src,Map<String, String> map) throws IOException {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
 		String line = reader.readLine();
 		while (line != null) {
 			String[] vList = line.split(",");
 			if (vList.length == 2) {
-				if (switch_kv) {
-					map.put(vList[1], vList[0]);
-				} else {
-					map.put(vList[0], vList[1]);
-				}
+				map.put(vList[1], vList[0]);
+			}
 
+			line = reader.readLine();
+		}
+		reader.close();
+	}
+	
+	
+	private void readOtherFeature(FileSystem fs, String src,Map<String, Feature> map) throws IOException {
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
+		String line = reader.readLine();
+		while (line != null) {
+			String[] vList = line.split(",");
+			if (vList.length == 2) {
+				map.put(vList[0],new Feature( vList[0],vList[1],"1"));
 			}
 
 			line = reader.readLine();
@@ -107,17 +117,14 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 				
 				//add user feature
 				if (getUserIdx(user, key.toString()) != null) {
-					result.get(unionKey).getfList().add(new Feature(key.toString(), getUserIdx(user, key.toString()), "1"));
+					result.get(unionKey).getfList().addAll(getUserIdx(user, key.toString()).getWordList());
 				}
 				
 				//add other feature
 				for (int i = 2; i < kv.length; i++) {
 					if (other.get(kv[i]) != null)
-						result.get(unionKey).getfList().add(new Feature(kv[i], other.get(kv[i]), "1"));
-				}	
-				
-				//add (ssp odp gdp) feature 
-				getUserWordVector(user, key.toString(), result.get(unionKey).getfList());			
+						result.get(unionKey).getfList().add(other.get(kv[i]));
+				}			
 					
 			}			
 		}
@@ -151,41 +158,51 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
 		
 	}
+	
 
-	private void getUserWordVector(Map<String, Pair<String, String>> userInfoMap, String uid,List<Feature> list) {
-
+	private UserDTO getUserIdx(Map<String, UserDTO> userInfoMap, String uid) {
+		
 		String[] vector;
 		String[] kv;
-		if (userInfoMap.get(uid) != null) {
-			if (userInfoMap.get(uid).getSecond() != null) {
-				vector = userInfoMap.get(uid).getSecond().split(" ");
-				for (String w : vector) {
-					 kv = w.split(":");
-					if (kv.length == 2) {
-						if (word.get(kv[0]) != null)
-							list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
-					}
-
-				}
-			}
-		}
-
-	}
-
-	private String getUserIdx(Map<String, Pair<String, String>> userInfoMap, String uid) {
+		List<Feature> list = null;
+		UserDTO dto = null;
 		
 		if(userInfoMap.get(uid) != null){
-			return userInfoMap.get(uid).getFirst();			
-		}else {
+			
+			return userInfoMap.get(uid);
+			
+		}else {						
 			try {
+				
+				list = new ArrayList<Feature>();
+				
 				Map<String, String> result = HbaseOperator.queryOneRecord(idxTable, Bytes.toBytes(uid));
 				
-				if (userInfoMap.size() < PropertiesUtils.getCacheUserNumber()) {
+				if(result.get("id")!= null ){					
 					
-					userInfoMap.put(uid,new Pair<String, String>(result.get("id"),result.get("vec")));
+					list.add(new Feature(uid,result.get("id"),"1"));																				
+					
 				}
 				
-				return result.get("id");
+				if(result.get("vec")!=null){
+					
+					vector = result.get("vec").split(" ");
+					
+					for (String w : vector) {
+						 kv = w.split(":");
+						if (kv.length == 2) {
+							if (word.get(kv[0]) != null)
+								list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
+						}
+
+					}
+				}
+				
+				dto = new UserDTO(result.get("id"),result.get("vec"),list);
+				
+				userInfoMap.put(uid,dto);
+				
+				return dto;
 
 			} catch (IOException e) {
 				e.printStackTrace();

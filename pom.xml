@@ -141,7 +141,7 @@
 			<version>0.7</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.mahout</groupId>
 			<artifactId>mahout-math</artifactId>
 			<version>0.7</version>
@@ -151,7 +151,7 @@
 			<groupId>org.apache.mahout</groupId>
 			<artifactId>mahout-integration</artifactId>
 			<version>0.7</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- <dependency>
 			<groupId>nz.ac.waikato.cms.weka</groupId>
