@@ -72,6 +72,8 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 			job.setOutputFormatClass(TextOutputFormat.class);
 			MultipleOutputs.addNamedOutput(job, "plain",TextOutputFormat.class, Text.class, Text.class);
+			MultipleOutputs.addNamedOutput(job, "idpositive",TextOutputFormat.class, Text.class, Text.class);
+			MultipleOutputs.addNamedOutput(job, "idnegtive",TextOutputFormat.class, Text.class, Text.class);
 			String output = PropertiesUtils.getMachineLearningRootDir()+ "/train/output";
 			HdfsUtil.delFile(fs, output);
 			FileOutputFormat.setOutputPath(job, new Path(output));
