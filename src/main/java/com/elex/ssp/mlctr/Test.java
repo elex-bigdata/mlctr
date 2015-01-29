@@ -2,8 +2,11 @@ package com.elex.ssp.mlctr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.mahout.common.Pair;
 
@@ -18,13 +21,24 @@ public class Test {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		Map<String,String> map = new HashMap<String,String>();
+		Feature f1 = new Feature("a","8","1");
+		Feature f2 = new Feature("a","30","2");
+		Feature f3 = new Feature("a","12","3");
+		Feature f4 = new Feature("a","90","4");
 		
-		System.out.println(map.get("a"));
+		Set<Feature> set = new TreeSet<Feature>();
+		set.add(f3);
+		set.add(f1);
+		set.add(f4);
+		set.add(f2);
 		
-		Pair<String, String> a= new Pair<String, String>("a",null);
+		for(Feature f:set){
 		
-		System.out.print(a.getSecond());
+			System.out.println(f.getIdx());
+		}
+		
+		
+		
 		
 	}
 

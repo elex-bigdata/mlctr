@@ -34,7 +34,7 @@ hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 
 hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizerUidAsMapOutKey test skip
 
-hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* test_id.txt
+hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* test_id_new.txt
 
 hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
 

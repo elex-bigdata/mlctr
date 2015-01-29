@@ -1,21 +1,24 @@
 package com.elex.ssp.mlctr.vector;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
+
 
 public class Result implements Serializable {
 	
 	private int impr;
 	private int click;
-	private List<Feature> fList;
+	private Set<Feature> otherFeature;//存放time、area、project等特征
+			
 	
-	public Result(int impr, int click, List<Feature> fList) {
+	public Result(int impr, int click,Set<Feature> other) {
 		super();
 		this.impr = impr;
 		this.click = click;
-		this.fList = fList;
+		this.otherFeature = other;
 	}
 
+	
 	public int getImpr() {
 		return impr;
 	}
@@ -31,15 +34,16 @@ public class Result implements Serializable {
 	public void setClick(int click) {
 		this.click = click;
 	}
-
-	public List<Feature> getfList() {
-		return fList;
+	
+	public Set<Feature> getOtherFeature() {
+		return otherFeature;
 	}
 
-	public void setfList(List<Feature> fList) {
-		this.fList = fList;
+	public void setOtherFeature(Set<Feature> otherFeature) {
+		this.otherFeature = otherFeature;
 	}
 
+	
 	public void adjustImprClick(){
 		
 		if (this.click >= this.impr) {
@@ -47,6 +51,7 @@ public class Result implements Serializable {
 			this.click = this.impr;
 		}
 	}
+	
 
 	/**
 	 * 

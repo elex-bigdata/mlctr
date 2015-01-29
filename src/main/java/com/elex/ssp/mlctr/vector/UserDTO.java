@@ -6,17 +6,25 @@ import java.util.List;
 public class UserDTO implements Serializable {
 	
 	private String id;//索引号
-	private String wordIdVector;//索引的词频向量
-	private List<Feature> wordList;//明文的词频向量
+	private String u_name;//"u_"打头的用户名
+	private List<Feature> wordList;//包括该用户的ssp、gdp、odp特征和uid特征
 	
 
-	public UserDTO(String id, String wordIdVector, List<Feature> wordList) {
+	public UserDTO(String id, String u_name, List<Feature> wordList) {
 		super();
 		this.id = id;
-		this.wordIdVector = wordIdVector;
+		this.u_name = u_name;
 		this.wordList = wordList;
 	}
 
+	public String getU_name() {
+		return u_name;
+	}
+
+	public void setU_name(String u_name) {
+		this.u_name = u_name;
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -25,13 +33,6 @@ public class UserDTO implements Serializable {
 		this.id = id;
 	}
 
-	public String getWordIdVector() {
-		return wordIdVector;
-	}
-
-	public void setWordIdVector(String wordIdVector) {
-		this.wordIdVector = wordIdVector;
-	}
 
 	public List<Feature> getWordList() {
 		return wordList;

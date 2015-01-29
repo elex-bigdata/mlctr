@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,7 +34,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private HTableInterface idxTable;
 	private String[] kv;
 	private String unionKey;
-	private Map<String,Result> result = new HashMap<String,Result>();
+	private Map<String,Result> resultMap = new HashMap<String,Result>();
 	private int impr = 0, click = 0;
 	
 	@Override
@@ -43,8 +44,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 		fs = FileSystem.get(context.getConfiguration());
 		String otherPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=merge/merge.txt";
 		String wordPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=word/word.idx";
-		readOtherFeature(fs, otherPath, other);
-		readIdxMap(fs, wordPath, word);
+		loadOtherFeatureMap(fs, otherPath, other);
+		loadWordMap(fs, wordPath, word);
 		idxTable = HbaseBasis.getConn().getTable(PropertiesUtils.getIdxHbaseTable());
 	}
 
@@ -56,7 +57,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
 	 * @throws IOException
 	 */
-	private void readIdxMap(FileSystem fs, String src,Map<String, String> map) throws IOException {
+	private void loadWordMap(FileSystem fs, String src,Map<String, String> map) throws IOException {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
 		String line = reader.readLine();
@@ -72,7 +73,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	}
 	
 	
-	private void readOtherFeature(FileSystem fs, String src,Map<String, Feature> map) throws IOException {
+	private void loadOtherFeatureMap(FileSystem fs, String src,Map<String, Feature> map) throws IOException {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
 		String line = reader.readLine();
@@ -92,7 +93,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			throws IOException, InterruptedException {
 
 		
-		result.clear();						
+		resultMap.clear();						
 		impr = 0;
 		click = 0;
 				
@@ -103,41 +104,38 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			if (kv.length == 13) {
 				unionKey = key.toString()+kv[2]+kv[3]+kv[4]+kv[5]+kv[6]+kv[7]+kv[8]+kv[9]+kv[10]+kv[11]+kv[12];
 				
-				if(result.get(unionKey)==null){
+				if(resultMap.get(unionKey)==null){
 					
-					result.put(unionKey, new Result(0,0,new ArrayList<Feature>()));
+					resultMap.put(unionKey, new Result(0,0,new TreeSet<Feature>()));
 					
 				}
 				
 				impr = kv[0] == null ? 0 : Integer.parseInt(kv[0]);
 				click = kv[1] == null ? 0 : Integer.parseInt(kv[1]);
 				
-				result.get(unionKey).setImpr(result.get(unionKey).getImpr() + impr);
-				result.get(unionKey).setClick(result.get(unionKey).getClick()+click);
+				resultMap.get(unionKey).setImpr(resultMap.get(unionKey).getImpr() + impr);
+				resultMap.get(unionKey).setClick(resultMap.get(unionKey).getClick()+click);								
 				
-				//add user feature
-				if (getUserIdx(user, key.toString()) != null) {
-					result.get(unionKey).getfList().addAll(getUserIdx(user, key.toString()).getWordList());
-				}
-				
-				//add other feature
+				//add other feature,由于同组特征可能有多条记录，因此other feature用map
 				for (int i = 2; i < kv.length; i++) {
 					if (other.get(kv[i]) != null)
-						result.get(unionKey).getfList().add(other.get(kv[i]));
+						if(!resultMap.get(unionKey).getOtherFeature().contains(other.get(kv[i]))){
+							resultMap.get(unionKey).getOtherFeature().add(other.get(kv[i]));
+						}						
 				}			
 					
 			}			
 		}
+		
+		
 				
-		Iterator<Entry<String, Result>> ite = result.entrySet().iterator();
+		Iterator<Entry<String, Result>> ite = resultMap.entrySet().iterator();
 		
 		while(ite.hasNext()){
 			
 			Entry<String, Result> entry = ite.next();
 			
-			Collections.sort(entry.getValue().getfList());
-			
-			entry.getValue().adjustImprClick();
+			entry.getValue().adjustImprClick();	
 			
 			StringBuffer idStr = new StringBuffer(100);
 			StringBuffer plainStr = new StringBuffer(100);
@@ -146,9 +144,19 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			plainStr.append(entry.getValue().getImpr() + " " + entry.getValue().getClick()+ " ");
 			
-			for (Feature f : entry.getValue().getfList()) {
+			for (Feature f : entry.getValue().getOtherFeature()) {
 				idStr.append(f.getIdx() + ":" + f.getValue() + " ");
 				plainStr.append(f.getKey() + ":" + f.getValue() + " ");
+			}
+			
+			
+			if(getUserDTO(user,key.toString()) != null){
+				if(getUserDTO(user,key.toString()).getWordList() != null){
+					for (Feature f : getUserDTO(user,key.toString()).getWordList()) {
+						idStr.append(f.getIdx() + ":" + f.getValue() + " ");
+						plainStr.append(f.getKey() + ":" + f.getValue() + " ");
+					}
+				}				
 			}
 
 			context.write(new Text(idStr.toString()), null);
@@ -159,28 +167,27 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 		
 	}
 	
-
-	private UserDTO getUserIdx(Map<String, UserDTO> userInfoMap, String uid) {
+	private UserDTO getUserDTO(Map<String, UserDTO> userInfoMap, String u_name) {
 		
 		String[] vector;
 		String[] kv;
 		List<Feature> list = null;
 		UserDTO dto = null;
 		
-		if(userInfoMap.get(uid) != null){
+		if(userInfoMap.get(u_name) != null){
 			
-			return userInfoMap.get(uid);
+			return userInfoMap.get(u_name);
 			
 		}else {						
 			try {
 				
 				list = new ArrayList<Feature>();
 				
-				Map<String, String> result = HbaseOperator.queryOneRecord(idxTable, Bytes.toBytes(uid));
+				Map<String, String> result = HbaseOperator.queryOneRecord(idxTable, Bytes.toBytes(u_name));
 				
 				if(result.get("id")!= null ){					
 					
-					list.add(new Feature(uid,result.get("id"),"1"));																				
+					list.add(new Feature(u_name,result.get("id"),"1"));																				
 					
 				}
 				
@@ -198,9 +205,11 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 					}
 				}
 				
-				dto = new UserDTO(result.get("id"),result.get("vec"),list);
+				Collections.sort(list);
 				
-				userInfoMap.put(uid,dto);
+				dto = new UserDTO(result.get("id"),u_name,list);
+				
+				userInfoMap.put(u_name,dto);
 				
 				return dto;
 
