@@ -13,6 +13,8 @@ import com.elex.ssp.mlctr.HiveOperator;
 import com.elex.ssp.mlctr.PropertiesUtils;
 
 public class PrepareForIndex {
+	
+	
 
 	/**
 	 * @param args
@@ -28,9 +30,9 @@ public class PrepareForIndex {
 		getDistinctUserIdList();
 		getDistinctWordList();
 		getDistinctOtherList();
-		getDistinctNationList(false);
+		getDistinctNationList(PropertiesUtils.isAllAdid());
 		getDistinctOsList();
-		getDistinctAdidList(false);
+		getDistinctAdidList(PropertiesUtils.isAllNation());
 	}
 	
 	public static void getDistinctAdidList(boolean isAll) throws SQLException {
@@ -67,8 +69,13 @@ public class PrepareForIndex {
 
 		Connection con = HiveOperator.getHiveConnection();
 		Statement stmt = con.createStatement();
-		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.word.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
-				    " select distinct concat_ws('_',source,word) from tfidf";
+		String preHql = "INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.word.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" ;
+		String hql;
+		if(PropertiesUtils.getPruneWordByWc()==0){
+			hql = preHql +" select distinct concat_ws('_',source,word) from tfidf";
+		}else{
+			hql = preHql +" select fv from (select concat_ws('_',source,word) as fv,count(1) as rc from tfidf group by concat_ws('_',source,word))a where a.rc="+PropertiesUtils.getPruneWordByWc();
+		}		
 		stmt.execute(hql);
 		System.out.println(hql);
 		stmt.close();

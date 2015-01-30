@@ -112,4 +112,23 @@ public class PropertiesUtils {
 		return Double.parseDouble(pop.getProperty("word.tfidf.threshold"));
 	}
 
+	public static int getPruneWordByWc() {
+		return Integer.parseInt(pop.getProperty("word.wc.prune"));
+	}
+
+	public static boolean isAllAdid() {
+		
+		if(pop.getProperty("all.adid") != null){
+			return pop.getProperty("all.adid").equals("true");
+		}
+		return false;
+	}
+
+	public static boolean isAllNation() {
+		if(pop.getProperty("all.nation") != null){
+			return pop.getProperty("all.nation").equals("true");
+		}
+		return false;
+	}
+
 }

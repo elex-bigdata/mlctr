@@ -98,8 +98,10 @@ create table ssp_idx_mapping(idx_key string,idx int) partitioned by(idx_type str
 
 create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 172800, IN_MEMORY => true},{NUMREGIONS => 5,SPLITALGO =>'UniformSplit'}
 
+/**===============去掉只出现一次的word特征值====================================**/
+select count(1) from (select concat(source,word),count(1) as rc from tfidf group by concat(source,word))a where a.rc=1;===815561
 
-
+select count(distinct concat(source,word)) from tfidf;==1149763
 
 
 

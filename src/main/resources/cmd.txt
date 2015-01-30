@@ -38,11 +38,18 @@ hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
 
 hadoop fs -getmerge /ssp/mlctr/train/output/part-r-* train_id.txt
 
+hadoop fs -getmerge /ssp/mlctr/train/output/idpositive* idpositive.txt
+
+hadoop fs -getmerge /ssp/mlctr/train/output/idnegtive* idnegtive.txt
+
 ln -s /data1/ssp/mlctr/ ssp
 
 cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
 
 ./liblinear_modified/train -s 6 /data1/ssp/mlctr/test_id.txt model/test.model
+
+jar -uvf mlctr-0.0.1-SNAPSHOT.jar conf.properties 
+
 
 iter   1  #CD cycles 1
 iter   2  #CD cycles 1

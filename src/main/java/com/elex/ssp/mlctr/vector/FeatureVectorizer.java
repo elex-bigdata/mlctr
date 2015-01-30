@@ -26,6 +26,10 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 	/**
 	 * @param args
+	 * 
+	 * args[0] determine whether to vectorize train data or to vectorize test data,option value is "train" or "test"
+	 * args[1] determing whether to skip prepare input for this mr job. if you want skip use "skip" as parameter,if not use "noskip".
+	 * args[2] set the reduce task number,it must be int value;
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
