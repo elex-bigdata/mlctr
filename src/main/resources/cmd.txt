@@ -13,6 +13,9 @@ yum install reddis
 
 create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 172800, IN_MEMORY => true},{NUMREGIONS => 5,SPLITALGO =>'UniformSplit'}
 
+create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 108000}
+
+
 
 
 
@@ -32,6 +35,8 @@ java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 
 hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizer train skip 20
 
+
+
 hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* test_id.txt
 
 hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
@@ -43,6 +48,8 @@ hadoop fs -getmerge /ssp/mlctr/train/output/idpositive* idpositive.txt
 hadoop fs -getmerge /ssp/mlctr/train/output/idnegtive* idnegtive.txt
 
 ln -s /data1/ssp/mlctr/ ssp
+
+java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.liblinear.RandomSample 0.5 /data1/ssp/mlctr/exp1/train_id.txt /data1/ssp/mlctr/exp1/train_sample.txt  
 
 cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
 

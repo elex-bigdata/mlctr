@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.mahout.common.Pair;
 
 import com.elex.ssp.mlctr.liblinear.RandomSample;
@@ -24,12 +25,14 @@ public class Test {
 		// TODO Auto-generated method stub
 		
 
+		int count =0;
+		for(int i =0;i<1000;i++){
+			if(RandomUtils.nextDouble()>0.5D){
+				count++;
+			}			
+		}
 		
-		String a = "1 1 1:1 3:1 46:1 1228:1 1744:1 3444:1 3450:1 3452:1 61923:0.366 740861:0.634 7219248:1";
-		
-		RandomSample rs = new RandomSample();
-		
-		System.out.println(rs.isPositive(a));
+		System.out.println(count);
 		
 		
 		

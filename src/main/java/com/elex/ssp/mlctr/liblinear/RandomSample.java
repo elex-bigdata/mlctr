@@ -46,14 +46,12 @@ public class RandomSample {
 		BufferedReader in;
 
 		String line;
-		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(negtiveFilePath),"UTF-8"));
-		in = new BufferedReader(new InputStreamReader(new FileInputStream(this.outFilePath),"UTF-8"));
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFilePath),"UTF-8"));
+		in = new BufferedReader(new InputStreamReader(new FileInputStream(negtiveFilePath),"UTF-8"));
 		line = in.readLine();
-		double round = RandomUtils.nextDouble();
 		
 		while (line != null) {
-			
-			if(round > sampleRatio || isPositive(line) ){
+			if(RandomUtils.nextDouble() > sampleRatio || isPositive(line) ){
 				out.write(line+"\r\n");
 			}
 			
