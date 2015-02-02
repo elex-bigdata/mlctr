@@ -71,8 +71,10 @@ public class FeatureValueEncoder {
 		int stop = sequenceId.get();
 		
 		if(src.equals(IdxType.word.getSrc())){
-			HdfsUtil.writeInt(count, new Path(PropertiesUtils.getRootDir()+"/wc.norm"), new Configuration());
-			HdfsUtil.writeInt(start, new Path(PropertiesUtils.getRootDir()+"/word_start_idx.norm"), new Configuration());
+			HdfsUtil.writeInt(count, new Path(PropertiesUtils.getMachineLearningRootDir()+"/wc.norm"), new Configuration());
+			System.out.println("write hdfs int wc="+count);
+			HdfsUtil.writeInt(start, new Path(PropertiesUtils.getMachineLearningRootDir()+"/word_start_idx.norm"), new Configuration());
+			System.out.println("write hdfs int word_start_idx="+start);
 		}
 		
 		return new Pair<Pair<Integer, Integer>, Integer>(new Pair<Integer, Integer>(start,stop),count);

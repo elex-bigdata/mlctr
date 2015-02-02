@@ -30,11 +30,6 @@ public class PropertiesUtils {
 		}
 	}
 
-	public static String getRootDir() {
-
-		return pop.getProperty("rootdir");
-	}
-
 	public static String getHiveurl() {
 		return pop.getProperty("hive.url");
 	}

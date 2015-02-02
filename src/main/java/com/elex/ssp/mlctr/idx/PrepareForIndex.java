@@ -122,7 +122,7 @@ public class PrepareForIndex {
 		Connection con = HiveOperator.getHiveConnection();
 		Statement stmt = con.createStatement();
 		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.os.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
-				" select distinct concat_ws('_','os',os) from log_merge where day='"+Constants.getLastNDay(5)+"'";
+				" select distinct concat_ws('_','os',os) from log_merge where day>'"+Constants.getLastNDay(5)+"'";
 		stmt.execute(hql);
 		System.out.println(hql);
 		stmt.close();

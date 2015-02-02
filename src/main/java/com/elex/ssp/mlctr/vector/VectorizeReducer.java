@@ -57,7 +57,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 		//loadWordMap(fs, wordPath, word);
 		loadWordArray(fs,wordPath);
 		idxTable = HbaseBasis.getConn().getTable(PropertiesUtils.getIdxHbaseTable());
-		wordStartIdx = HdfsUtil.readInt(new Path(PropertiesUtils.getRootDir()+"/word_start_idx.norm"),context.getConfiguration());
+		wordStartIdx = HdfsUtil.readInt(new Path(PropertiesUtils.getMachineLearningRootDir()+"/word_start_idx.norm"),context.getConfiguration());
 		
 		System.out.println(wordStartIdx);
 	}
