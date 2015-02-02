@@ -64,8 +64,8 @@ public class PrepareForIndex {
 		if(PropertiesUtils.getPruneUserByImpr()==0){
 			hql = preHql +" select distinct concat_ws('_','u',fv) from feature_merge where ft ='user'";
 		}else{
-			hql = preHql +" select fv from(select fv,sum(impr) as s_i from feature_merge" +
-					" where ft='user' and array_contains (array ("+PropertiesUtils.getNations()+"), nation) group by fv)a" +
+			hql = preHql +" select uid from(select concat_ws('_','u',fv) as uid,sum(impr) as s_i from feature_merge" +
+					" where ft='user' and array_contains (array ("+PropertiesUtils.getNations()+"), nation) group by concat_ws('_','u',fv))a" +
 					" where a.s_i>"+PropertiesUtils.getPruneWordByWc();
 		}
 		stmt.execute(hql);
