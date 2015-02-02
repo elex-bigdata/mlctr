@@ -74,7 +74,7 @@ public class PrepareForIndex {
 		if(PropertiesUtils.getPruneWordByWc()==0){
 			hql = preHql +" select distinct concat_ws('_',source,word) from tfidf";
 		}else{
-			hql = preHql +" select fv from (select concat_ws('_',source,word) as fv,count(1) as rc from tfidf group by concat_ws('_',source,word))a where a.rc="+PropertiesUtils.getPruneWordByWc();
+			hql = preHql +" select fv from (select concat_ws('_',source,word) as fv,count(1) as rc from tfidf group by concat_ws('_',source,word))a where a.rc>"+PropertiesUtils.getPruneWordByWc();
 		}		
 		stmt.execute(hql);
 		System.out.println(hql);
