@@ -245,7 +245,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 					for (String w : vector) {
 						 kv = w.split(":");
 						if (kv.length == 2) {
-							if (wordArr[Integer.parseInt(kv[0])] != null)
+							if (wordArr[Integer.parseInt(kv[0])-wordStartIdx] != null)
 								if(PropertiesUtils.getThreshold() == 0D){
 									list.add(new Feature(wordArr[Integer.parseInt(kv[0])-wordStartIdx], kv[0],kv[1]));
 								}else{
