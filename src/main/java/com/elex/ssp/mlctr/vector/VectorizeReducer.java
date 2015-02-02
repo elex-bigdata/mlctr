@@ -22,12 +22,14 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import com.elex.ssp.mlctr.HbaseBasis;
 import com.elex.ssp.mlctr.HbaseOperator;
+import com.elex.ssp.mlctr.HdfsUtil;
 import com.elex.ssp.mlctr.PropertiesUtils;
 
 public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
 	private Map<String, Feature> other = new HashMap<String, Feature>();// key-idx
-	private Map<String, String> word = new HashMap<String, String>();// idx-key
+	//private Map<String, String> word = new HashMap<String, String>();// idx-key
+	private String[] wordArr;
 	private Map<String, UserDTO> user = new HashMap<String, UserDTO>();
 	private MultipleOutputs<Text, Text> plain,idpositive,idnegtive;
 	private FileSystem fs;
@@ -40,6 +42,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private Text plainText = new Text();
 	private StringBuffer idStr = new StringBuffer(100);
 	private StringBuffer plainStr = new StringBuffer(100);
+	private int wordStartIdx =0;
 	
 	@Override
 	protected void setup(Context context) throws IOException,InterruptedException {
@@ -51,8 +54,12 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 		String otherPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=merge/merge.txt";
 		String wordPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=word/word.idx";
 		loadOtherFeatureMap(fs, otherPath, other);
-		loadWordMap(fs, wordPath, word);
+		//loadWordMap(fs, wordPath, word);
+		loadWordArray(fs,wordPath);
 		idxTable = HbaseBasis.getConn().getTable(PropertiesUtils.getIdxHbaseTable());
+		wordStartIdx = HdfsUtil.readInt(new Path(PropertiesUtils.getRootDir()+"/word_start_idx.norm"),context.getConfiguration());
+		
+		System.out.println(wordStartIdx);
 	}
 
 	/**
@@ -63,7 +70,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
 	 * @throws IOException
 	 */
-	private void loadWordMap(FileSystem fs, String src,Map<String, String> map) throws IOException {
+	/*private void loadWordMap(FileSystem fs, String src,Map<String, String> map) throws IOException {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
 		String line = reader.readLine();
@@ -71,6 +78,28 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			String[] vList = line.split(",");
 			if (vList.length == 2) {
 				map.put(vList[1], vList[0]);
+			}
+
+			line = reader.readLine();
+		}
+		reader.close();
+	}*/
+	
+	private void loadWordArray(FileSystem fs, String src) throws IOException {
+
+		int length = HdfsUtil.readInt(new Path("/ssp/mlctr/wc.norm"), fs.getConf());
+		System.out.println(length);
+		wordArr = new String[length];
+		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
+		String line = reader.readLine();
+		String[] vList;
+		int index = 0 ;
+		while (line != null ) {
+			vList = line.split(",");
+			if (vList.length == 2) {
+				wordArr[index]=vList[0];
+				index++;
 			}
 
 			line = reader.readLine();
@@ -216,13 +245,13 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 					for (String w : vector) {
 						 kv = w.split(":");
 						if (kv.length == 2) {
-							if (word.get(kv[0]) != null)
+							if (wordArr[Integer.parseInt(kv[0])] != null)
 								if(PropertiesUtils.getThreshold() == 0D){
-									list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
+									list.add(new Feature(wordArr[Integer.parseInt(kv[0])-wordStartIdx], kv[0],kv[1]));
 								}else{
 									try{
 										if(Double.parseDouble(kv[1])>PropertiesUtils.getThreshold()){
-											list.add(new Feature(word.get(kv[0]), kv[0],kv[1]));
+											list.add(new Feature(wordArr[Integer.parseInt(kv[0])-wordStartIdx], kv[0],kv[1]));
 										}
 									}catch(NumberFormatException ne){
 										
@@ -245,6 +274,8 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
 			} catch (IOException e) {
 				e.printStackTrace();
+				return null;
+			}catch(NumberFormatException ne){
 				return null;
 			}
 		}

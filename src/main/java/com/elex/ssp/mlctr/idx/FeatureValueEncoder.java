@@ -13,8 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.mahout.common.Pair;
 
+import com.elex.ssp.mlctr.HdfsUtil;
 import com.elex.ssp.mlctr.PropertiesUtils;
 
 public class FeatureValueEncoder {
@@ -66,6 +69,11 @@ public class FeatureValueEncoder {
 
 		out.close();
 		int stop = sequenceId.get();
+		
+		if(src.equals(IdxType.word.getSrc())){
+			HdfsUtil.writeInt(count, new Path(PropertiesUtils.getRootDir()+"/wc.norm"), new Configuration());
+			HdfsUtil.writeInt(start, new Path(PropertiesUtils.getRootDir()+"/word_start_idx.norm"), new Configuration());
+		}
 		
 		return new Pair<Pair<Integer, Integer>, Integer>(new Pair<Integer, Integer>(start,stop),count);
 
