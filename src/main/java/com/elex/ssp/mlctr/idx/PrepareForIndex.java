@@ -57,8 +57,17 @@ public class PrepareForIndex {
 
 		Connection con = HiveOperator.getHiveConnection();
 		Statement stmt = con.createStatement();
-		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.user.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
-			    " select distinct concat_ws('_','u',fv) from feature_merge where ft ='user'";
+		String preHql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.user.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile";
+		
+		String hql;
+		
+		if(PropertiesUtils.getPruneUserByImpr()==0){
+			hql = preHql +" select distinct concat_ws('_','u',fv) from feature_merge where ft ='user'";
+		}else{
+			hql = preHql +" select fv from(select fv,sum(impr) as s_i from feature_merge" +
+					" where ft='user' and array_contains (array ("+PropertiesUtils.getNations()+"), nation) group by fv)a" +
+					" where a.s_i>"+PropertiesUtils.getPruneWordByWc();
+		}
 		stmt.execute(hql);
 		System.out.println(hql);
 		stmt.close();

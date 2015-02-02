@@ -126,4 +126,9 @@ public class PropertiesUtils {
 		return false;
 	}
 
+	public static int getPruneUserByImpr() {
+		
+		return Integer.parseInt(pop.getProperty("user.impr.threshold"));
+	}
+
 }

@@ -103,6 +103,9 @@ select count(1) from (select concat(source,word),count(1) as rc from tfidf group
 
 select count(distinct concat(source,word)) from tfidf;==1149763
 
+/**====================统计impr低于某个阈值的用户数========================**/
+select count(1) from(select fv,sum(impr) as s_i from feature_merge where ft='user' and array_contains (array ('br','in'), nation) group by fv)a where a.s_i <10;==4779741
+
 
 
 
