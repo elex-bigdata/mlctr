@@ -58,11 +58,32 @@ public class HdfsUtil {
 	    }
 	  }
 	
+	public static void writeLong(long value, Path path, Configuration conf) throws IOException {
+	    FileSystem fs = FileSystem.get(path.toUri(), conf);
+	    FSDataOutputStream out = fs.create(path);
+	    try {
+	      out.writeLong(value);
+	    } finally {
+	      Closeables.closeQuietly(out);
+	    }
+	  }
+	
 	public static int readInt(Path path, Configuration conf) throws IOException {
 	    FileSystem fs = FileSystem.get(path.toUri(), conf);
 	    FSDataInputStream in = fs.open(path);
 	    try {
 	      return in.readInt();
+	    } finally {
+	      Closeables.closeQuietly(in);
+	    }
+	  }
+	
+	
+	public static long readLong(Path path, Configuration conf) throws IOException {
+	    FileSystem fs = FileSystem.get(path.toUri(), conf);
+	    FSDataInputStream in = fs.open(path);
+	    try {
+	      return in.readLong();
 	    } finally {
 	      Closeables.closeQuietly(in);
 	    }

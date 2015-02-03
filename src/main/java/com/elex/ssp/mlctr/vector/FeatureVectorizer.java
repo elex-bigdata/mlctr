@@ -23,6 +23,10 @@ import com.elex.ssp.mlctr.HiveOperator;
 import com.elex.ssp.mlctr.PropertiesUtils;
 
 public class FeatureVectorizer extends Configured implements Tool {
+	
+	public enum SampleCounter {
+		positive,negtive
+		}
 
 	/**
 	 * @param args
@@ -76,8 +80,6 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 			job.setOutputFormatClass(TextOutputFormat.class);
 			MultipleOutputs.addNamedOutput(job, "plain",TextOutputFormat.class, Text.class, Text.class);
-			MultipleOutputs.addNamedOutput(job, "idpositive",TextOutputFormat.class, Text.class, Text.class);
-			MultipleOutputs.addNamedOutput(job, "idnegtive",TextOutputFormat.class, Text.class, Text.class);
 			String output = PropertiesUtils.getMachineLearningRootDir()+ "/train/output";
 			HdfsUtil.delFile(fs, output);
 			FileOutputFormat.setOutputPath(job, new Path(output));
@@ -104,8 +106,6 @@ public class FeatureVectorizer extends Configured implements Tool {
 
 			job.setOutputFormatClass(TextOutputFormat.class);
 			MultipleOutputs.addNamedOutput(job, "plain",TextOutputFormat.class, Text.class, Text.class);
-			MultipleOutputs.addNamedOutput(job, "idpositive",TextOutputFormat.class, Text.class, Text.class);
-			MultipleOutputs.addNamedOutput(job, "idnegtive",TextOutputFormat.class, Text.class, Text.class);
 			String output = PropertiesUtils.getMachineLearningRootDir()+ "/test/output";
 			HdfsUtil.delFile(fs, output);
 			FileOutputFormat.setOutputPath(job, new Path(output));
@@ -114,7 +114,15 @@ public class FeatureVectorizer extends Configured implements Tool {
 			System.err.println("FeatureVectorizer wrong arg value!!!" + args[0]);
 		}
 
-		return job.waitForCompletion(true) ? 0 : 1;
+		int result = job.waitForCompletion(true) ? 0 : 1;
+		
+		HdfsUtil.writeLong(job.getCounters().findCounter(SampleCounter.positive).getValue(), 
+				new Path(PropertiesUtils.getMachineLearningRootDir()+"/"+args[0]+".positive.count"), conf);
+		
+		HdfsUtil.writeLong(job.getCounters().findCounter(SampleCounter.negtive).getValue(),
+				new Path(PropertiesUtils.getMachineLearningRootDir()+"/"+args[0]+".negtive.count"), conf);
+
+		return result;
 	}
 	
 	//cat user.idx | cut -c 3 | sort | uniq -c | sort -nr

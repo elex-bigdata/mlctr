@@ -24,6 +24,7 @@ import com.elex.ssp.mlctr.HbaseBasis;
 import com.elex.ssp.mlctr.HbaseOperator;
 import com.elex.ssp.mlctr.HdfsUtil;
 import com.elex.ssp.mlctr.PropertiesUtils;
+import com.elex.ssp.mlctr.vector.FeatureVectorizer.SampleCounter;
 
 public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 
@@ -31,7 +32,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	//private Map<String, String> word = new HashMap<String, String>();// idx-key
 	private String[] wordArr;
 	private Map<String, UserDTO> user = new HashMap<String, UserDTO>();
-	private MultipleOutputs<Text, Text> plain,idpositive,idnegtive;
+	private MultipleOutputs<Text, Text> plain;
 	private FileSystem fs;
 	private HTableInterface idxTable;
 	private String[] kv;
@@ -48,8 +49,6 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	protected void setup(Context context) throws IOException,InterruptedException {
 		super.setup(context);
 		plain = new MultipleOutputs<Text, Text>(context);// 初始化
-		idpositive = new MultipleOutputs<Text, Text>(context);
-		idnegtive = new MultipleOutputs<Text, Text>(context);
 		fs = FileSystem.get(context.getConfiguration());
 		String otherPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=merge/merge.txt";
 		String wordPath = PropertiesUtils.getIdxHivePath()+ "/idx_type=word/word.idx";
@@ -202,13 +201,12 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			if(entry.getValue().getClick()==0){
 				
-				idnegtive.write("idnegtive", idText, null);
+				context.getCounter(SampleCounter.negtive).increment(1);
 				
-			}else{
-				
-				idpositive.write("idpositive",idText, null);
+			}else{				
+				context.getCounter(SampleCounter.positive).increment(1);
 			}
-			
+			context.write(idText, null);
 			plain.write("plain", plainText, null);			
 		}
 			
@@ -287,8 +285,6 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			InterruptedException {
 		super.cleanup(context);
 		plain.close();// 释放资源
-		idpositive.close();
-		idnegtive.close();
 		idxTable.close();
 	}
 
