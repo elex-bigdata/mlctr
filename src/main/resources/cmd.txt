@@ -45,9 +45,6 @@ hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
 
 hadoop fs -getmerge /ssp/mlctr/train/output/part-r-* train_id.txt
 
-hadoop fs -getmerge /ssp/mlctr/train/output/idpositive* idpositive.txt
-
-hadoop fs -getmerge /ssp/mlctr/train/output/idnegtive* idnegtive.txt
 
 ln -s /data1/ssp/mlctr/ ssp
 
@@ -63,18 +60,22 @@ cat output/exp5.out | python ./liblinear_modified/calauc.py
 
 jar -uvf mlctr-0.0.1-SNAPSHOT.jar conf.properties 
 
+cat train_id.txt | awk 'BEGIN {i=0;c=0;t=0} {i=i+$1;c=c+$2;t=t+1} END {print i,c,t}'
 
-iter   1  #CD cycles 1
-iter   2  #CD cycles 1
-iter   3  #CD cycles 1
-iter   4  #CD cycles 1
-iter   5  #CD cycles 1
-iter   6  #CD cycles 3
-iter   7  #CD cycles 1
-iter   8  #CD cycles 1
-=========================
-optimization finished, #iter = 8
-Objective value = 423546.435913
-#nonzeros/#features = 7115/10055495
+cat test_id.txt | awk '{if($2>0) printf "+1 "; else printf "-1 "; for(i=3;i<=NF;i++) printf $i" ";print "\r"}' >> change_test.txt
+
+./liblinear-1.96/train -s 6 /data1/ssp/mlctr/exp5/change_test.txt model/exp5_change.model >> train_exp5.log 2>&1 &
+
+#centos 安装numpy,scipy
+sudo yum -y install numpy scipy 
+
+#安装pip
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+#安装scikit-learning
+sudo pip install -U scikit-learn
+
+
+
 
 

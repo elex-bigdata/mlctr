@@ -33,17 +33,7 @@ public class Test {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		
-
-		Map<String, String> word = new HashMap<String, String>();
-		
-		String[] arr = new String[1149763];
-		System.out.println(new Date());
-		loadWordMap("C:\\Users\\Administrator\\Downloads\\word.idx",word);
-		System.out.println(new Date());
-		
-		System.out.println(new Date());
-		//loadWordArray("C:\\Users\\Administrator\\Downloads\\word.idx", arr);
-		System.out.println(new Date());
+		System.out.println(Integer.parseInt("+1"));
 		
 	}
 	

@@ -10,7 +10,7 @@ import java.io.OutputStreamWriter;
 
 import org.apache.commons.lang.math.RandomUtils;
 
-public class RandomSample {
+public abstract class RandomSample {
 	
 	private double sampleRatio;
 	private String negtiveFilePath;
@@ -41,7 +41,7 @@ public class RandomSample {
 		this.sampleRatio = sampleRatio;
 	}
 
-	private void sampling() throws IOException{
+	public void sampling() throws IOException{
 		
 		BufferedReader in;
 
@@ -63,34 +63,6 @@ public class RandomSample {
 		
 	}
 	
-	public boolean isPositive(String line){
-		try{
-			if(Integer.parseInt(line.substring(line.indexOf(" ")+1, line.indexOf(" ", line.indexOf(" ")+1)))>0){
-				
-				return true;
-			}
-		}catch(NumberFormatException ne){
-			return false;
-		}				
-		return false;
-	}
+	public abstract boolean isPositive(String line);
 	
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException {
-		
-		RandomSample sam = new RandomSample();
-		
-		sam.setSampleRatio(Double.parseDouble(args[0]));
-		
-		sam.setNegtiveFilePath(args[1]);
-		
-		sam.setOutFilePath(args[2]);
-		
-		sam.sampling();
-		
-	}
-
 }
