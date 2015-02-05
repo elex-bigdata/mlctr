@@ -51,7 +51,7 @@ public abstract class RandomSample {
 		line = in.readLine();
 		
 		while (line != null) {
-			if(RandomUtils.nextDouble() > sampleRatio || isPositive(line) ){
+			if(RandomUtils.nextDouble() < sampleRatio || isPositive(line) ){
 				out.write(line+"\r\n");
 			}
 			

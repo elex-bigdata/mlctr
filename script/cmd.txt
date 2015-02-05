@@ -1,3 +1,4 @@
+################memcached##################
 sudo yum install memcached
 memcached -d -m 256 -u hadoop -l 10.1.20.242 -p 11210 -c 10 -t 4 -P /tmp/memcached0.pid
 memcached -d -m 256 -u hadoop -l 10.1.20.242 -p 11211 -c 10 -t 4 -P /tmp/memcached1.pid
@@ -6,25 +7,24 @@ memcached -d -m 256 -u hadoop -l 10.1.20.242 -p 11211 -c 10 -t 4 -P /tmp/memcach
 -t 线程数
 printf "set chinatree 0 0 6\r\n123456\r\n" | nc 10.1.20.242 11210
 printf "get chinatree\r\n" | nc 10.1.20.242 11210
+################memcached##################
 
-
-
-yum install reddis
-
+################hbase 表创建##################
 create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 172800, IN_MEMORY => true},{NUMREGIONS => 5,SPLITALGO =>'UniformSplit'}
 
 create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 108000}
 
 truncate 'ssp_idx_mapping'
+################hbase 表创建##################
 
 
+################生成训练、测试数据##################
 https://github.com/elex-bigdata/mlctr.git
 
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.idx.PrepareForIndex
 报错：如果mr执行成功，但报FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
 原因：导出目的地权限问题
 解决：chmod -R 777 /home/hadoop/wuzhongju/ctr/data
-
 
 java -cp .:/usr/lib/hadoop-hdfs/*:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.idx.FeatureValueEncoder
 报错：java.io.IOException: No FileSystem for scheme: hdfs
@@ -37,35 +37,82 @@ java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizer train skip 20
 
 hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.vector.FeatureVectorizer test skip 20
+################生成训练、测试数据##################
 
-
+#获取训练和测试样本
 hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* test_id.txt
-
-hadoop fs -getmerge /ssp/mlctr/test/output/plain* test_plain.txt
 
 hadoop fs -getmerge /ssp/mlctr/train/output/part-r-* train_id.txt
 
 
 ln -s /data1/ssp/mlctr/ ssp
 
+#合并样本的负例随机抽样
 java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.liblinear.RandomSample 0.5 /data1/ssp/mlctr/exp1/train_id.txt /data1/ssp/mlctr/exp1/train_sample.txt  
 
+#cut截取字符
 cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
 
+#使用赶集版的liblinear训练和预测
 ./liblinear_modified/train -s 6 /data1/ssp/mlctr/exp5/train_id.txt model/exp5.model >> train_exp5.log 2>&1 &
 
 ./liblinear_modified/predict -b 1 /data1/ssp/mlctr/exp5/test_id.txt model/exp5.model output/exp5.out
 
+#使用赶集版的AUC计算工具
 cat output/exp5.out | python ./liblinear_modified/calauc.py
 
+#更新jar包中的配置文件
 jar -uvf mlctr-0.0.1-SNAPSHOT.jar conf.properties 
 
+#统计合并后的训练样本中的展现、点击和样本数
 cat train_id.txt | awk 'BEGIN {i=0;c=0;t=0} {i=i+$1;c=c+$2;t=t+1} END {print i,c,t}'
 
+#将合并的训练样本改为标准格式的训练样本（原样本如果有点击就取一条正例，否则取一条负例，重复样本只取一条）
 cat test_id.txt | awk '{if($2>0) printf "+1 "; else printf "-1 "; for(i=3;i<=NF;i++) printf $i" ";print "\r"}' >> change_test.txt
 
-./liblinear-1.96/train -s 6 /data1/ssp/mlctr/exp5/change_test.txt model/exp5_change.model >> train_exp5.log 2>&1 &
+#标准格式的训练样本抽样
+java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.liblinear.NormalFormatSample 0.6 change_train.txt change_train_sample.txt
 
+#标准格式训练样本抽样后统计正例个数
+cat change_train_sample.txt | awk 'BEGIN {t=0} {if($1=="-1") t=t+1} END {print t}'
+
+#使用原生liblinear1.96训练模型
+./liblinear-1.96/train -s 6 /data1/ssp/mlctr/exp5/change_train_sample.txt model/exp5_change_sample.model >> train_exp5.log 2>&1 &
+
+
+#准备标准版的scikitAUC输入文件
+tail -n +2 exp5_change_sample.out | awk '{if($1=="+1") print 1; else print $1}' >> ptag.txt
+tail -n +2 exp5_change_sample.out | awk '{print $2}' >> pscore.txt
+cat change_test.txt | awk '{if($1=="+1") print 1; else print $1}' >> otag.txt
+
+#准备赶集版的scikitAUC计算输入文件
+cat exp5.out | awk '{print $2}' >> pscoregj.txt
+cat exp5.out | awk '{print $1}' >> ptaggj.txt
+cat /data1/ssp/mlctr/exp5/test_id.txt | awk '{if($2!="0") print "0"; else print "1"}' >> otaggj.txt
+cat ptaggj.txt | awk '{if($1==1) print "-1"; else print "1"}' >> ptaggj_1.txt
+cat otaggj.txt | awk '{if($1==1) print "-1"; else print "1"}' >> otaggj_1.txt
+
+#使用scikit-learning计算AUC和混淆矩阵
+python auc.py ptag.txt otag.txt pscore.txt >> result.txt 2>&1 &
+python auc.py ptaggj_1.txt otaggj_1.txt pscoregj.txt >> gjresult.txt 2>&1 &
+
+#按列合并文件,准备yar的输入文件，并用vi修改表头
+paste -d ' ' otag.txt pscore.txt pscoregj.txt >> yard.input
+
+#用yard计算auc
+yard-auc -t roc yard.input
+
+#将scikitAUC赶集版的输入文件转为kddcup_auc.py的输入
+paste -d ' ' otaggj.txt pscoregj.txt >> exp5.kdd
+cat exp5.kdd | awk '{if($1=="1") printf "-1 "; else printf "1 ";print $2}' >> exp5_1.kdd
+
+#将scikitAUC标准版的输入文件为kddcup_auc.py的输入
+paste -d ' ' otag.txt pscore.txt >> exp5_change.kdd
+
+#使用kddcup_auc.py计算auc
+cat exp5_1.kdd | python kddcup_auc.py 
+cat exp5_change.kdd | python kddcup_auc.py
+ 
 #centos 安装numpy,scipy
 sudo yum -y install numpy scipy 
 
@@ -75,7 +122,5 @@ sudo python get-pip.py
 #安装scikit-learning
 sudo pip install -U scikit-learn
 
-
-
-
-
+#安装yard
+sudo pip install yard
