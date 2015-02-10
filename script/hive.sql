@@ -107,5 +107,27 @@ select count(distinct concat(source,word)) from tfidf;==1149763
 select count(1) from(select fv,sum(impr) as s_i from feature_merge where ft='user' and array_contains (array ('br','in'), nation) group by fv)a where a.s_i <10;==4779741
 
 
-
+/**根据线上决策日志准备测试数据**/
+INSERT OVERWRITE DIRECTORY '/ssp/mlctr/test/input' 
+SELECT 
+  l.uid,
+  l.pid,
+  l.ip,
+  l.time,
+  l.nation,
+  l.ua,
+  l.os,
+  l.adid,
+  l.ref,
+  l.opt,
+  l.impr,
+  l.click 
+FROM
+  (SELECT DISTINCT reqid FROM auc_input) a 
+  JOIN log_merge l 
+    ON a.reqid = l.reqid 
+WHERE l.day > '20150125' 
+  AND l.day < '20150129' 
+  AND l.adid LIKE '%5%' 
+  AND array_contains (array ('br', 'in'), l.nation)
 

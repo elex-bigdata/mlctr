@@ -48,7 +48,7 @@ hadoop fs -getmerge /ssp/mlctr/train/output/part-r-* train_id.txt
 ln -s /data1/ssp/mlctr/ ssp
 
 #合并样本的负例随机抽样
-java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.liblinear.RandomSample 0.5 /data1/ssp/mlctr/exp1/train_id.txt /data1/ssp/mlctr/exp1/train_sample.txt  
+java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar com.elex.ssp.mlctr.liblinear.GJFormatSample 0.5 /data1/ssp/mlctr/exp1/train_id.txt /data1/ssp/mlctr/exp1/train_sample.txt  
 
 #cut截取字符
 cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
@@ -56,10 +56,10 @@ cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
 #使用赶集版的liblinear训练和预测
 ./liblinear_modified/train -s 6 /data1/ssp/mlctr/exp5/train_id.txt model/exp5.model >> train_exp5.log 2>&1 &
 
-./liblinear_modified/predict -b 1 /data1/ssp/mlctr/exp5/test_id.txt model/exp5.model output/exp5.out
+./liblinear_modified/predict -b 1 /data1/ssp/mlctr/exp3/test_id.txt model/exp3.model output/exp3.out
 
 #使用赶集版的AUC计算工具
-cat output/exp5.out | python ./liblinear_modified/calauc.py
+cat output/exp3.out | python ./liblinear_modified/calauc.py
 
 #更新jar包中的配置文件
 jar -uvf mlctr-0.0.1-SNAPSHOT.jar conf.properties 
@@ -124,3 +124,33 @@ sudo pip install -U scikit-learn
 
 #安装yard
 sudo pip install yard
+
+#计算赶集版的混淆矩阵
+cat exp3.out | awk '{print $1}' | awk '{if($1==1) print "-1"; else print "1"}' >> ptag.txt
+cat /data1/ssp/mlctr/exp3/test_id.txt | awk '{if($2!="0") print "0"; else print "1"}' | awk '{if($1==1) print "-1"; else print "1"}' >> otag.txt
+paste -d ' ' otag.txt ptag.txt >> cminput.txt
+cat cminput.txt | python ../script/cal_cm.py 
+
+###################根据线上日志计算线上auc###################
+
+#获取线上的predicted-ctr
+cat dec.log.2015-01-27 | grep MSG | awk '{print $4,$9}' >> auc.in
+#传输文件到制定主机上
+scp log.gz2 hadoop@10.108.195.194:/home/hadoop/wuzhongju/ctr/log.gz2
+#解压
+tar -jxf log.gz2
+#科学计数法转为float并保留6位小数
+cat auc.in | python ../script/parselog.py >> parsed.log
+#创建hive表和加载数据
+create table auc_input(reqid string,pctr string)ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' stored as textfile;
+load data local inpath '/home/hadoop/wuzhongju/ctr/data/parsed.log' overwrite into table auc_input;
+#联查获取点击展示数据并导出
+hive -e "INSERT OVERWRITE LOCAL DIRECTORY '/home/hadoop/wuzhongju/ctr/data/auc' ROW FORMAT delimited FIELDS TERMINATED BY ' ' stored AS textfile
+  SELECT CASE WHEN l.click > 0 THEN 1 ELSE 0 END,a.ctr FROM (select reqid,max(pctr) as ctr from odin.auc_input group by reqid) a JOIN odin.log_merge l ON a.reqid=l.reqid 
+  WHERE l.day>'20150125' AND l.day<'20150129' AND l.adid LIKE '%5%' AND array_contains(array('br','in'),l.nation)"
+#计算auc
+cat ../data/auc/auc.out | python kddcup_auc.py
+#注意python脚本中这句代码根据情况修改
+item = line.rstrip('\n').split(' ')
+
+###################根据线上日志计算线上auc###################
