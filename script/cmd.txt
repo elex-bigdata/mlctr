@@ -17,6 +17,7 @@ create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 108000}
 truncate 'ssp_idx_mapping'
 ################hbase 表创建##################
 
+sh /home/hadoop/wuzhongju/ctr/ml.sh >> /home/hadoop/wuzhongju/ctr/train.log 2>&1 &
 
 ################生成训练、测试数据##################
 https://github.com/elex-bigdata/mlctr.git
@@ -54,12 +55,12 @@ java -cp .:/home/hadoop/git_project_home/mlctr/target/mlctr-0.0.1-SNAPSHOT.jar c
 cat user.idx | cut -c 3 | sort | uniq -c | sort -nr
 
 #使用赶集版的liblinear训练和预测
-./liblinear_modified/train -s 6 /data1/ssp/mlctr/exp5/train_id.txt model/exp5.model >> train_exp5.log 2>&1 &
+/home/hadoop/wuzhongju/ctr/liblinear_modified/train -s 6 /data1/ssp/mlctr/train_id.txt /home/hadoop/wuzhongju/ctr/model/exp5.model >> /home/hadoop/wuzhongju/ctr/train.log 2>&1 &
 
-./liblinear_modified/predict -b 1 /data1/ssp/mlctr/exp3/test_id.txt model/exp3.model output/exp3.out
+/home/hadoop/wuzhongju/ctr/liblinear_modified/predict -b 1 /data1/ssp/mlctr/test_id.txt /home/hadoop/wuzhongju/ctr/model/ctr.model /home/hadoop/wuzhongju/ctr/output/ctr.out
 
 #使用赶集版的AUC计算工具
-cat output/exp3.out | python ./liblinear_modified/calauc.py
+cat /home/hadoop/wuzhongju/ctr/output/ctr.out | python /home/hadoop/wuzhongju/ctr/liblinear_modified/calauc.py
 
 #更新jar包中的配置文件
 jar -uvf mlctr-0.0.1-SNAPSHOT.jar conf.properties 
