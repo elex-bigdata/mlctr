@@ -33,43 +33,73 @@ public class Scheduler {
 		// stage 0
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("prepare feature value for index encoder!!!");
-			PrepareForIndex.prepareAll();		
+			try{
+				PrepareForIndex.prepareAll();
+			}catch(Exception se){
+				log.error("prepare feature value for index encoder ERROR!!!,SYSTEM EXIT!!!");
+				System.exit(success);
+			}			
 			log.info("prepare feature value for index encoder SUCCESS!!!");
 		}
 		
 		//stage 1
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("feature value encode START!!!");
-			FeatureValueEncoder.processAll();	
+			try{
+				FeatureValueEncoder.processAll();
+			}catch(Exception se){
+				log.error("feature value encode ERROR!!!,SYSTEM EXIT!!!");
+				System.exit(success);
+			}		
 			log.info("feature value encode SUCCESS!!!");
 		}
 		
 		//stage 2
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("load index to hive and hbase START!!!");
-			IndexLoader.load();		
+			try{
+				IndexLoader.load();
+			}catch(Exception se){
+				log.error("load index to hive and hbaseERROR!!!,SYSTEM EXIT!!!");
+				System.exit(success);
+			}		
 			log.info("load index to hive and hbase SUCCESS!!!");
 		}
 		
 		//stage 3
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("create user word vector and load to hbase START!!!");
-			UserWordFeature.createUserWordFeatureFile();
-			UserWordFeature.loadUserWordVectorToHbase();		
+			try{
+				UserWordFeature.createUserWordFeatureFile();
+				UserWordFeature.loadUserWordVectorToHbase();
+			}catch(Exception se){
+				log.error("create user word vector and load to hbase ERROR!!!,SYSTEM EXIT!!!");
+				System.exit(success);
+			}		
 			log.info("load index to hive and hbase SUCCESS!!!");
 		}
 		
 		//stage 4
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("prepare training data START!!!");
-			ToolRunner.run(new Configuration(), new FeatureVectorizer(), new String[]{"train","noskip","20"});		
+			try{
+				ToolRunner.run(new Configuration(), new FeatureVectorizer(), new String[]{"train","noskip","20"});
+			}catch(Exception se){
+				log.error("prepare training data ERROR!!!,SYSTEM EXIT!!!");
+				System.exit(success);
+			}		
 			log.info("prepare training data SUCCESS!!!");
 		}
 		
 		//stage 5
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("prepare test data START!!!");
-			ToolRunner.run(new Configuration(), new FeatureVectorizer(), new String[]{"test","noskip","20"});		
+			try{
+				ToolRunner.run(new Configuration(), new FeatureVectorizer(), new String[]{"test","noskip","20"});
+			}catch(Exception se){
+				log.error("prepare test data ERROR!!!,SYSTEM EXIT!!!");
+				System.exit(success);
+			}		
 			log.info("prepare test data SUCCESS!!!");
 		}
 		
