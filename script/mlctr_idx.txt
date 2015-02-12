@@ -1,0 +1,43 @@
+﻿特征值-索引号映射文件
+
+1、特征类型前缀的枚举类型
+  browser("browser","ua","bw"),//类型名称，前缀，备用前缀
+	area("area","ip","ip"),
+	user("user","u","u"),
+	project("project","p","p"),
+	odp("odp","odp","odp"),
+	gdp("gdp","gdp","gk"),
+	ssp("ssp","ssp","kw"),
+	os("os","os","os"),
+	nation("nation","na","na"),
+	adid("adid","ad","ad"),
+	ref("ref","ref","rf"),
+	opt("opt","opt","opt"),
+	time("time","t","t");
+1、merge.txt
+该文件包含了nation，adid，browser，area，project，os，ref，opt，time的所有特征值及编号。
+格式为utf-8的txt文本，每行一条映射记录，每条记录包含两个字段，字段间用逗号分隔，第一个字段为'特征类型前缀_特征值',第二个字段为索引号。
+例如
+ad_50993,32
+t_foreNoon,5332
+t_noon,5333
+ua_MSIE,5334
+2、user.idx
+该文件包含了uid的索引对应关系，由于对pv小于10的uid没有进行索引编号，因此并不是每一个uid都有记录。
+格式为utf-8的txt文本，每行一条映射记录，每条记录包含两个字段，字段间用逗号分隔，第一个字段为'u_uid',第二个字段为索引号。
+例如
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_0482,1155134
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_0767,1155135
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_0824,1155136
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_0962,1155137
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_1487,1155138
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_1505,1155139
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_1640,1155140
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_2228,1155141
+u_0XmSATAX32GBXXXXXXXXXXXXXXX_3650,1155142
+3、user-vec.txt
+该文件包含了用户的sspkeyword、odpkeyword和odp混合向量。对其中的每个word进行了tfidf截取，tfidf值在该类中小于0.01的向量不予记录。
+格式为utf-8的txt文本，每行一条映射记录，每条记录包含两个字段，字段间用逗号分隔，第一个字段为'u_uid',第二个字段为词向量。
+词向量的每个分量以空格分隔，每个分量的用冒号分隔，冒号前面是词索引号，后面是该词在该类词中的tfidf值
+例如：
+u_0A7E380XXXXXXXXXXXXXXXXXXXX_NG8P,50345:0.2374 50357:0.7098 626190:0.052

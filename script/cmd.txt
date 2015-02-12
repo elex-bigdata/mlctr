@@ -155,3 +155,11 @@ cat ../data/auc/auc.out | python kddcup_auc.py
 item = line.rstrip('\n').split(' ')
 
 ###################根据线上日志计算线上auc###################
+
+#######194.hive-server2问题解决###################
+java.io.IOException: Cannot initialize Cluster. Please check your configuration for mapreduce.framework.name and the correspond server addresses.
+
+解决：
+sudo vi /etc/default/hive-server2 
+export HADOOP_MAPRED_HOME=/usr/lib/hadoop-0.20-mapreduce
+
