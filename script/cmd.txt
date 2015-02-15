@@ -135,20 +135,21 @@ cat cminput.txt | python ../script/cal_cm.py
 ###################根据线上日志计算线上auc###################
 
 #获取线上的predicted-ctr
-cat dec.log.2015-01-27 | grep MSG | awk '{print $4,$9}' >> auc.in
+cat dec.log.2015-02-13 | grep MSG | awk '{print $4,$NF}' >> auc.in
+tar -cjf log.gz2 auc.in
 #传输文件到制定主机上
 scp log.gz2 hadoop@10.108.195.194:/home/hadoop/wuzhongju/ctr/log.gz2
 #解压
 tar -jxf log.gz2
 #科学计数法转为float并保留6位小数
-cat auc.in | python ../script/parselog.py >> parsed.log
+cat auc.in | python script/parselog.py >> parsed.log
 #创建hive表和加载数据
 create table auc_input(reqid string,pctr string)ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' stored as textfile;
 load data local inpath '/home/hadoop/wuzhongju/ctr/data/parsed.log' overwrite into table auc_input;
-#联查获取点击展示数据并导出
+#联查获取点击展示数据并导出(调整日期)
 hive -e "INSERT OVERWRITE LOCAL DIRECTORY '/home/hadoop/wuzhongju/ctr/data/auc' ROW FORMAT delimited FIELDS TERMINATED BY ' ' stored AS textfile
   SELECT CASE WHEN l.click > 0 THEN 1 ELSE 0 END,a.ctr FROM (select reqid,max(pctr) as ctr from odin.auc_input group by reqid) a JOIN odin.log_merge l ON a.reqid=l.reqid 
-  WHERE l.day>'20150125' AND l.day<'20150129' AND l.adid LIKE '%5%' AND array_contains(array('br','in'),l.nation)"
+  WHERE l.day>'20150211' AND l.day<'20150214' AND l.adid LIKE '%5%' AND array_contains(array('br','in'),l.nation)"
 #计算auc
 cat ../data/auc/auc.out | python kddcup_auc.py
 #注意python脚本中这句代码根据情况修改
