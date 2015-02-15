@@ -163,5 +163,5 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
 sudo vi /etc/default/hive-server2 
 export HADOOP_MAPRED_HOME=/usr/lib/hadoop-0.20-mapreduce
 
-
+#用shell求user-vec文件中word索引号的最大值
 cat user-vec.txt | awk -F "," '{ print $2}' | awk '{ for (i=1;i<=NF;i++) print $i }' | awk -F ":" 'BEGIN {max=0} {if ($1>max) max=$1} END{print max}'

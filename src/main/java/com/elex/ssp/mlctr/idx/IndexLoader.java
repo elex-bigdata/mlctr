@@ -72,7 +72,7 @@ public class IndexLoader {
 	public static void loadIndexToHbase(List<String> files,boolean isWordVec) throws IOException {
 		ExecutorService service = new ThreadPoolExecutor(5, 20, 60,TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>());
 		long startTime = System.currentTimeMillis();
-		int batchSize = 200000;
+		int batchSize = 50000;
 		int total = 0;
 		FileInputStream fis = null;
 		BufferedReader reader = null;
