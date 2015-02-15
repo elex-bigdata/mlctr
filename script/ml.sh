@@ -6,22 +6,24 @@ hadoop jar $jardir'mlctr-0.0.1-SNAPSHOT.jar' com.elex.ssp.mlctr.Scheduler 0 5 >>
 rm -rf $datadir'*.txt'
 hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* $datadir'test_id.txt'
 hadoop fs -getmerge /ssp/mlctr/train/output/part-r-* $datadir'train_id.txt'
+
+today=`date -d now +%Y%m%d`
+mv $workdir'model/ctr.model' $workdir'bak/'$today'.model'
+
 size=`du -sh $datadir'train_id.txt' | awk -F "G" '{print $1}'`
 echo $size
 if [ $size -gt 10 ];then
    ratio=`echo "scale=2;10/$size" | bc`
    echo $ratio
    java -cp .:$jardir'mlctr-0.0.1-SNAPSHOT.jar' com.elex.ssp.mlctr.liblinear.GJFormatSample $ratio $datadir'train_id.txt' $datadir'train_sam.txt'
-   $workdir'liblinear_modified/'train -s 6 $datadir'train_sam.txt' model/ctr.model
-   $workdir'liblinear_modified/'predict -b 1 $datadir'test_id.txt' model/ctr.model output/ctr.out
+   $workdir'liblinear_modified/'train -s 6 $datadir'train_sam.txt' $workdir'model/ctr.model'
+   $workdir'liblinear_modified/'predict -b 1 $datadir'test_id.txt' $workdir'model/ctr.model' $workdir'output/ctr.out'
 else
-   $workdir'liblinear_modified/'train -s 6 $datadir'train_id.txt' model/ctr.model
-   $workdir'liblinear_modified/'predict -b 1 $datadir'test_id.txt' model/ctr.model output/ctr.out
+   $workdir'liblinear_modified/'train -s 6 $datadir'train_id.txt' $workdir'model/ctr.model'
+   $workdir'liblinear_modified/'predict -b 1 $datadir'test_id.txt' $workdir'model/ctr.model' $workdir'output/ctr.out'
 fi
 cat $workdir'output/ctr.out' | python $workdir'liblinear_modified/calauc.py'
 
-today=`date -d now +%Y%m%d`
-cp $workdir'model/ctr.model' $workdir'bak/'$today'.model'
 todaydir=$workdir$today
 yestoday=$workdir`date -d yesterday +%Y%m%d`
 rm -rf $yestoday
@@ -32,5 +34,8 @@ cat $workdir'data/vec/0'* >> $todaydir'/user-vec.txt'
 cp $workdir'model/ctr.model' $todaydir'/ctr.model'
 cat $workdir'data/idx/merge.txt' >> $todaydir'/idx.txt'
 cat $workdir'data/idx/user.idx' >> $todaydir'/idx.txt'
-tar -cjf $today'.gz2' $todaydir
-scp $today'.gz2' elex@10.102.66.212:/data/ml_model
+
+cd $workdir
+tar -cjf $today'.gz2' $today
+scp $workdir$today'.gz2' elex@10.102.66.212:/data/ml_model
+tail /home/hadoop/wuzhongju/ctr/train.log | mailx -s "mlctr" wuzhongju@126.com

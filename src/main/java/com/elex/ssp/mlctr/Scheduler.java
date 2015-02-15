@@ -76,7 +76,7 @@ public class Scheduler {
 				log.error("create user word vector and load to hbase ERROR!!!,SYSTEM EXIT!!!");
 				System.exit(success);
 			}		
-			log.info("load index to hive and hbase SUCCESS!!!");
+			log.info("create user word vector and load to hbase SUCCESS!!!");
 		}
 		
 		//stage 4

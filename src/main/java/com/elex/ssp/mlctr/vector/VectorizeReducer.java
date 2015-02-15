@@ -44,6 +44,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	private StringBuffer idStr = new StringBuffer(100);
 	private StringBuffer plainStr = new StringBuffer(100);
 	private int wordStartIdx =0;
+	private int wordArrLength=0;
 	
 	@Override
 	protected void setup(Context context) throws IOException,InterruptedException {
@@ -86,15 +87,15 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 	
 	private void loadWordArray(FileSystem fs, String src) throws IOException {
 
-		int length = HdfsUtil.readInt(new Path("/ssp/mlctr/wc.norm"), fs.getConf());
-		System.out.println(length);
-		wordArr = new String[length];
+		wordArrLength = HdfsUtil.readInt(new Path("/ssp/mlctr/wc.norm"), fs.getConf());
+		System.out.println(wordArrLength);
+		wordArr = new String[wordArrLength];
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(new Path(src))));
 		String line = reader.readLine();
 		String[] vList;
 		int index = 0 ;
-		while (line != null ) {
+		while (line != null && index<wordArrLength ) {
 			vList = line.split(",");
 			if (vList.length == 2) {
 				wordArr[index]=vList[0];
@@ -218,6 +219,7 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 		String[] kv;
 		List<Feature> list = null;
 		UserDTO dto = null;
+		int wordIdx=0;
 		
 		if(userInfoMap.get(u_name) != null){
 			
@@ -243,9 +245,13 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 					for (String w : vector) {
 						 kv = w.split(":");
 						if (kv.length == 2) {
-							if (wordArr[Integer.parseInt(kv[0])-wordStartIdx] != null){
-								list.add(new Feature(wordArr[Integer.parseInt(kv[0])-wordStartIdx], kv[0],kv[1]));								
-							}																
+							wordIdx=Integer.parseInt(kv[0])-wordStartIdx;
+							if(wordIdx < wordArrLength){
+								if (wordArr[wordIdx] != null){
+									list.add(new Feature(wordArr[wordIdx], kv[0],kv[1]));								
+								}
+							}
+																							
 						}
 
 					}

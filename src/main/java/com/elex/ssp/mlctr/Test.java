@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -22,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.common.Pair;
 
+import com.elex.ssp.mlctr.idx.IdxType;
 import com.elex.ssp.mlctr.liblinear.RandomSample;
 import com.elex.ssp.mlctr.vector.Feature;
 import com.elex.ssp.mlctr.vector.UserDTO;
@@ -33,11 +37,17 @@ public class Test {
 	/**
 	 * @param args
 	 * @throws IOException 
+	 * @throws SQLException 
 	 */
-	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
+	public static void main(String[] args) throws IOException, SQLException {
 		
-		System.out.println(readInt("C:\\Users\\Administrator\\Downloads\\wc.norm"));
+		Connection con = HiveOperator.getHiveConnection();
+		Statement stmt = con.createStatement();
+		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '/home/hadoop/wuzhongju/ctr/data/aaa' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
+				" select distinct concat_ws('_',source,word) from tfidf";
+		stmt.execute(hql);
+		System.out.println(hql);
+		stmt.close();
 		
 	}
 	
