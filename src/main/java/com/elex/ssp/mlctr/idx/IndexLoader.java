@@ -27,24 +27,27 @@ public class IndexLoader {
 	 * @param args
 	 * @throws SQLException 
 	 * @throws IOException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args) throws SQLException, IOException {
+	public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		
 		load();
 
 	}
 	
 	
-	public static void load() throws SQLException, IOException{
+	public static void load() throws SQLException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException{
         loadIndexToHive();
 		
 		List<String> files = new ArrayList<String>();
 		
-		files.add(IdxType.user.getDist());
-		files.add(IdxType.word.getDist());
+		//files.add(IdxType.user.getDist());
+		//files.add(IdxType.word.getDist());
 		files.add(PropertiesUtils.getIdxMergeFilePath());
 		
-		loadIndexToHbase(files,false);
+		loadIndexToHbase(files,"com.elex.ssp.mlctr.idx.HBasePutterMergeIdx");
 	}
 
 	public static void loadIndexToHive() throws SQLException {
@@ -55,7 +58,7 @@ public class IndexLoader {
 		HiveOperator.loadDataToHiveTable(hql);
 		System.out.println(hql);
 
-		hql = "load data local inpath '" + IdxType.user.getDist()+ "' overwrite into table "
+		/*hql = "load data local inpath '" + IdxType.user.getDist()+ "' overwrite into table "
 				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='user')";
 
 		HiveOperator.loadDataToHiveTable(hql);
@@ -65,11 +68,11 @@ public class IndexLoader {
 				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='word')";
 
 		HiveOperator.loadDataToHiveTable(hql);
-		System.out.println(hql);
+		System.out.println(hql);*/
 
 	}
 
-	public static void loadIndexToHbase(List<String> files,boolean isWordVec) throws IOException {
+	public static void loadIndexToHbase(List<String> files,String putterClassName) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		ExecutorService service = new ThreadPoolExecutor(5, 20, 60,TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>());
 		long startTime = System.currentTimeMillis();
 		int batchSize = 50000;
@@ -88,12 +91,23 @@ public class IndexLoader {
 				lines.add(line);
 				total++;
 				if (lines.size() == batchSize) {
-					jobs.add(service.submit(new HBasePutter(tableName, lines,file,isWordVec)));
+					 Class onwClass = Class.forName(putterClassName);
+					 HBasePutter putter = (HBasePutter) onwClass.newInstance();
+					 putter.setFile(file);
+					 putter.setLines(lines);
+					 putter.setTable(tableName);
+					 
+					jobs.add(service.submit(putter));
 					lines = new ArrayList<String>();					
 				}
 			}
 			if (lines.size() > 0) {
-				jobs.add(service.submit(new HBasePutter(tableName, lines,file,isWordVec)));
+				 Class onwClass = Class.forName(putterClassName);
+				 HBasePutter putter = (HBasePutter) onwClass.newInstance();
+				 putter.setFile(file);
+				 putter.setLines(lines);
+				 putter.setTable(tableName);
+				jobs.add(service.submit(putter));
 			}
 		}
 		

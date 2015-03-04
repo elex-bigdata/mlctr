@@ -8,7 +8,9 @@ hadoop fs -getmerge /ssp/mlctr/test/output/part-r-* $datadir'test_id.txt'
 hadoop fs -getmerge /ssp/mlctr/train/output/part-r-* $datadir'train_id.txt'
 
 today=`date -d now +%Y%m%d`
-mv $workdir'model/ctr.model' $workdir'bak/'$today'.model'
+yestoday=$workdir`date -d yesterday +%Y%m%d`
+
+mv $yestoday'.gz2' $workdir'bak/'
 
 size=`du -sh $datadir'train_id.txt' | awk -F "G" '{print $1}'`
 echo $size
@@ -25,7 +27,6 @@ fi
 cat $workdir'output/ctr.out' | python $workdir'liblinear_modified/calauc.py'
 
 todaydir=$workdir$today
-yestoday=$workdir`date -d yesterday +%Y%m%d`
 rm -rf $yestoday
 rm -rf $yestoday'.gz2'
 mkdir $todaydir

@@ -18,8 +18,11 @@ public class UserWordFeature {
 	 * @param args
 	 * @throws SQLException 
 	 * @throws IOException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args) throws SQLException, IOException {
+	public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		createUserWordFeatureFile();
 		loadUserWordVectorToHbase();
 	}
@@ -40,7 +43,7 @@ public class UserWordFeature {
 		stmt.close();
 	}
 
-	public static void loadUserWordVectorToHbase() throws IOException {
+	public static void loadUserWordVectorToHbase() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		
 		List<String> vector_files = new ArrayList<String>();
 		File[] files = new File(PropertiesUtils.getUserWordVectorPath()).listFiles();
@@ -50,7 +53,7 @@ public class UserWordFeature {
 			}
 		}
 		
-		IndexLoader.loadIndexToHbase(vector_files,true);
+		IndexLoader.loadIndexToHbase(vector_files,"com.elex.ssp.mlctr.idx.HBasePutterUserWords");
 		
 
 	}

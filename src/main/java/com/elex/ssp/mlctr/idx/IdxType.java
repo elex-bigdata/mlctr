@@ -3,14 +3,15 @@ package com.elex.ssp.mlctr.idx;
 import com.elex.ssp.mlctr.Constants;
 
 public enum IdxType {
-	
-	//以下顺序不能改动，需要增加索引类型时请在nation前加
+		
 	nation(Constants.IDX_PATH+"/nation",Constants.IDX_PATH+"/nation.idx"),
 	os(Constants.IDX_PATH+"/os",Constants.IDX_PATH+"/os.idx"),
 	adid(Constants.IDX_PATH+"/adid",Constants.IDX_PATH+"/adid.idx"),
-	other(Constants.IDX_PATH+"/other",Constants.IDX_PATH+"/other.idx"),
-	word(Constants.IDX_PATH+"/word",Constants.IDX_PATH+"/word.idx"),
-	user(Constants.IDX_PATH+"/user",Constants.IDX_PATH+"/user.idx");
+	cluster(Constants.IDX_PATH+"/cluster",Constants.IDX_PATH+"/cluster.idx"),
+	odp(Constants.IDX_PATH+"/odp",Constants.IDX_PATH+"/odp.idx"),
+	other(Constants.IDX_PATH+"/other",Constants.IDX_PATH+"/other.idx");
+	//word(Constants.IDX_PATH+"/word",Constants.IDX_PATH+"/word.idx");
+	//user(Constants.IDX_PATH+"/user",Constants.IDX_PATH+"/user.idx");
 	
 	
 	private String src;

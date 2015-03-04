@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.elex.ssp</groupId>
 	<artifactId>mlctr</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>mlctr</name>
 	<description>machine learning for ctr</description>
 	<packaging>jar</packaging>
@@ -178,4 +177,5 @@
 		</dependency> -->
 		
 	</dependencies>
+	<version>2.0</version>
 </project>

@@ -2,6 +2,7 @@ package com.elex.ssp.mlctr.vector;
 
 public enum FeaturePrefix {
 
+	cluster("cluster","cl","cl"),
 	browser("browser","ua","bw"),
 	area("area","ip","ip"),
 	user("user","u","u"),

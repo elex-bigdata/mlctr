@@ -27,8 +27,9 @@ public class PrepareForIndex {
 	
 	
 	public static void prepareAll() throws SQLException, IOException{
-		getDistinctUserIdList();
-		getDistinctWordList();
+		//getDistinctUserIdList();
+		//getDistinctWordList();
+		getDistinctOdpList();
 		getDistinctOtherList();
 		getDistinctNationList(PropertiesUtils.isAllAdid());
 		getDistinctOsList();
@@ -52,8 +53,20 @@ public class PrepareForIndex {
 		stmt.close();
 		
 	}
+	
+	public static void getDistinctOdpList() throws SQLException {
 
-	public static void getDistinctUserIdList() throws SQLException {
+		Connection con = HiveOperator.getHiveConnection();
+		Statement stmt = con.createStatement();
+		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.odp.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
+				    " select distinct concat_ws('_','odp',tag) from user_tag";
+		stmt.execute(hql);
+		System.out.println(hql);
+		stmt.close();
+		
+	}
+
+	/*public static void getDistinctUserIdList() throws SQLException {
 
 		Connection con = HiveOperator.getHiveConnection();
 		Statement stmt = con.createStatement();
@@ -72,9 +85,9 @@ public class PrepareForIndex {
 		System.out.println(hql);
 		stmt.close();
 		
-	}
+	}*/
 
-	public static void getDistinctWordList() throws SQLException {
+	/*public static void getDistinctWordList() throws SQLException {
 
 		Connection con = HiveOperator.getHiveConnection();
 		Statement stmt = con.createStatement();
@@ -89,7 +102,7 @@ public class PrepareForIndex {
 		System.out.println(hql);
 		stmt.close();
 		
-	}
+	}*/
 
 	public static void getDistinctOtherList() throws SQLException {
 
