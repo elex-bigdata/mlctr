@@ -37,8 +37,7 @@ public class FeatureValueEncoder {
 	 */
 	public static void main(String[] args) throws IOException {
 		
-		//processAll();
-		PropertiesUtils.getMergeFileLists();
+		processAll();
 		
 	}
 
