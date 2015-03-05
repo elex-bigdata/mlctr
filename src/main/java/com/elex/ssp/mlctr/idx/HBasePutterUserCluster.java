@@ -21,7 +21,7 @@ public class HBasePutterUserCluster extends HBasePutter {
 		if(line.split(",").length==2){
 			Put put = new Put(Bytes.toBytes(line.split(",")[0]));
 			put.add(Bytes.toBytes("idx"),Bytes.toBytes("cl"), 
-					Bytes.toBytes(this.getMap().get(FeaturePrefix.cluster.getsName()+"_"+line.split(",")[1])));
+					Bytes.toBytes(this.getMap().get(line.split(",")[1])));
 			return put;
 		}		
 		return null;

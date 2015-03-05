@@ -71,8 +71,7 @@ public abstract class HBasePutter implements Callable<String> {
 				if(buildPut(line) != null){
 					puts.add(buildPut(line));
 				}
-				
-				
+								
 			} catch (Exception e) {
 				System.err.println("get exception:" + e.getMessage()+ ", ignore the log : " + line);
 			}
