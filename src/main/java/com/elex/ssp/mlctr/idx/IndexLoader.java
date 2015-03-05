@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -58,11 +60,32 @@ public class IndexLoader {
 		loadIndexToHbase(odpFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserOdp");
 		
 		FormatConvertor.readSeqfileToLocal(PropertiesUtils.getUserClusterResultPath(), PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt");
+		String hql = "load data local inpath '"+ PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt"+ "' overwrite into table "
+				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='cluster')";
+		HiveOperator.loadDataToHiveTable(hql);
+		System.out.println(hql);
 		List<String> clusterFiles = new ArrayList<String>();
 		clusterFiles.add(PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt");
 		loadIndexToHbase(clusterFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserCluster");
+		createUserOdpClusterUnionFile();
 		
 		
+	}
+	
+	public static void createUserOdpClusterUnionFile() throws SQLException {
+		Connection con = HiveOperator.getHiveConnection();
+		Statement stmt = con.createStatement();
+		stmt.execute("add jar " + PropertiesUtils.getHiveUdfJar());
+		stmt.execute("CREATE TEMPORARY FUNCTION concatspace AS 'com.elex.ssp.udf.GroupConcatSpace'");
+		String hql = "INSERT OVERWRITE LOCAL DIRECTORY '"
+				+ PropertiesUtils.getUserWordVectorPath()
+				+ "' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile"
+				+ " select case when odp.uid is null then cluster.idx_key else odp.uid end as user,odp.tag as odp,cluster.idx as cluster from user_tag odp full outer join "
+				+ PropertiesUtils.getIdxHiveTableName()
+				+ " cluster on odp.uid = cluster.idx_key where cluster.idx_type='cluster'";
+		stmt.execute(hql);
+		System.out.println(hql);
+		stmt.close();
 	}
 
 	public static void loadIndexToHive() throws SQLException {

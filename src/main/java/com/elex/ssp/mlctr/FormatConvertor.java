@@ -122,7 +122,7 @@ public class FormatConvertor {
 	        						clusters.add(FeaturePrefix.cluster.getsName()+"_"+cluster.toString());
 	        					}
 	        					userVec = (NamedVector) user.getVector();
-	        					out.write(cluster.toString() + "," +  userVec.getName().replace(",", "")+ "\r\n");
+	        					out.write(userVec.getName().replace(",", "") + "," +  cluster.toString()+ "\r\n");
 	        					
 	        				}
 	        				

@@ -37,7 +37,7 @@ mkdir $todaydir
 cat $workdir'data/vec/0'* >> $todaydir'/user-vec.txt'
 cp $workdir'model/ctr.model' $todaydir'/ctr.model'
 cat $workdir'data/idx/merge.txt' >> $todaydir'/idx.txt'
-cat $workdir'data/idx/user.idx' >> $todaydir'/idx.txt'
+#cat $workdir'data/idx/user.idx' >> $todaydir'/idx.txt'
 
 cd $workdir
 tar -cjf $today'.gz2' $today
