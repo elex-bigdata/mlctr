@@ -33,23 +33,28 @@ public class FormatConvertor {
 	 * @param args
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
-		if(args.length != 3){
+	public static void main(String[] args) {
+		if (args.length != 3) {
 			System.out.print("com.elex.ssp.mlctr.FormatConvertor:参数不足！");
 			System.exit(1);
-		}else{
-			if(args[2].equals("txt-seq")){
-				txtToSeq(new Path(args[0]), new Path(args[1]));
-			}else if(args[2].equals("seq-txt")){
-				readSeqfileToLocal(args[0],args[1]);
-			}else{
-				System.out.print("com.elex.ssp.mlctr.FormatConvertor:不支持的转换方式==="+args[2]+"！");
-				System.exit(1);
+		} else {
+
+			try {
+				if (args[2].equals("txt-seq")) {
+					txtToSeq(new Path(args[0]), new Path(args[1]));
+				} else if (args[2].equals("seq-txt")) {
+					readSeqfileToLocal(args[0], args[1]);
+				} else {
+					System.out.print("com.elex.ssp.mlctr.FormatConvertor:不支持的转换方式==="+ args[2] + "！");
+					System.exit(1);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+
 		}
-		
-		
-		//readLocalDfsFile();
+
+		// readLocalDfsFile();
 
 	}
 
@@ -81,6 +86,8 @@ public class FormatConvertor {
 							line = reader.readLine();
 						}
 
+					} catch (IOException e) {
+						e.printStackTrace();
 					} finally {
 						IOUtils.closeStream(reader);
 					}
@@ -117,7 +124,7 @@ public class FormatConvertor {
 	        				IntWritable cluster = new IntWritable();
 	        				WeightedVectorWritable user = new WeightedVectorWritable();
 	        				NamedVector userVec;
-	        				while (reader.next(cluster, cluster)) {
+	        				while (reader.next(cluster, user)) {
 	        					if(!clusters.contains(FeaturePrefix.cluster.getsName()+"_"+cluster.toString())){
 	        						clusters.add(FeaturePrefix.cluster.getsName()+"_"+cluster.toString());
 	        					}
@@ -128,7 +135,9 @@ public class FormatConvertor {
 	        				
 	        				out.close();
 	        				
-	        			} finally {
+	        			}  catch (IOException e) {
+	        				e.printStackTrace();
+	        			}finally {
 	        				
 	        				IOUtils.closeStream(reader);
 	        				
