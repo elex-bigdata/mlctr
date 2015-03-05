@@ -17,6 +17,8 @@ create 'ssp_idx_mapping',{NAME => 'idx', VERSIONS => 1, TTL => 72000}
 truncate 'ssp_idx_mapping'
 ################hbase 表创建##################
 
+create table ssp_idx_mapping(idx_key string,idx string) partitioned by(idx_type string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' stored as textfile;
+
 sh /home/hadoop/wuzhongju/ctr/ml.sh >> /home/hadoop/wuzhongju/ctr/train.log 2>&1 &
 
 ################生成训练、测试数据##################

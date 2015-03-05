@@ -1,14 +1,18 @@
 package com.elex.ssp.mlctr.idx;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -25,6 +29,8 @@ import org.apache.hadoop.fs.Path;
 import com.elex.ssp.mlctr.FormatConvertor;
 import com.elex.ssp.mlctr.HiveOperator;
 import com.elex.ssp.mlctr.PropertiesUtils;
+import com.elex.ssp.mlctr.vector.Feature;
+import com.elex.ssp.mlctr.vector.FeaturePrefix;
 
 public class IndexLoader {
 
@@ -54,12 +60,11 @@ public class IndexLoader {
 		
 		Configuration conf = new Configuration();
 		FileUtil.copyMerge(FileSystem.get(conf), new Path(PropertiesUtils.getHiveWareHouse()+"/user_tag"), 
-				FileSystem.getLocal(conf), new Path(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt"), false, conf, "\n");		
+				FileSystem.getLocal(conf), new Path(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt"), true, conf, "\n");		
 		List<String> odpFiles = new ArrayList<String>();		
 		odpFiles.add(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt");
 		loadIndexToHbase(odpFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserOdp");
 		
-		FormatConvertor.readSeqfileToLocal(PropertiesUtils.getUserClusterResultPath(), PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt");
 		String hql = "load data local inpath '"+ PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt"+ "' overwrite into table "
 				+ PropertiesUtils.getIdxHiveTableName()+ " partition(idx_type='cluster')";
 		HiveOperator.loadDataToHiveTable(hql);
@@ -67,9 +72,9 @@ public class IndexLoader {
 		List<String> clusterFiles = new ArrayList<String>();
 		clusterFiles.add(PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt");
 		loadIndexToHbase(clusterFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserCluster");
+				
 		createUserOdpClusterUnionFile();
-		
-		
+				
 	}
 	
 	public static void createUserOdpClusterUnionFile() throws SQLException {
@@ -77,15 +82,48 @@ public class IndexLoader {
 		Statement stmt = con.createStatement();
 		stmt.execute("add jar " + PropertiesUtils.getHiveUdfJar());
 		stmt.execute("CREATE TEMPORARY FUNCTION concatspace AS 'com.elex.ssp.udf.GroupConcatSpace'");
-		String hql = "INSERT OVERWRITE LOCAL DIRECTORY '"
+		
+		String hql="insert into table "+PropertiesUtils.getIdxHiveTableName()+" partition(idx_type='cluster') select uid,CONCAT('odp_',tag) from user_tag";
+		stmt.execute(hql);
+		
+		hql = "INSERT OVERWRITE LOCAL DIRECTORY '"
 				+ PropertiesUtils.getUserWordVectorPath()
 				+ "' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile"
-				+ " select case when odp.uid is null then cluster.idx_key else odp.uid end as user,odp.tag as odp,cluster.idx as cluster from user_tag odp full outer join "
-				+ PropertiesUtils.getIdxHiveTableName()
-				+ " cluster on odp.uid = cluster.idx_key where cluster.idx_type='cluster'";
+				+ " select b.user, concatspace(CONCAT_WS(':',a.idx,'1')) from "
+				+ " (select idx_key as key,idx from "+ PropertiesUtils.getIdxHiveTableName()+" where idx_type = 'merge')a"
+				+ " join "
+				+ " (select idx_key as user,idx from "+ PropertiesUtils.getIdxHiveTableName()+" where idx_type = 'cluster')b"				
+				+ " ON a.key=b.idx group by b.user";
 		stmt.execute(hql);
 		System.out.println(hql);
-		stmt.close();
+		stmt.close();				
+		
+	}
+	
+	public static Map<String, String> loadOdpClusterIdxMap() {
+
+		BufferedReader reader;
+		Map<String, String> odp_cluster_map = new HashMap<String, String>();
+		try {
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(PropertiesUtils.getIdxMergeFilePath()))));
+			String line = reader.readLine();
+			while (line != null) {
+				String[] vList = line.split(",");
+				if (vList.length == 2) {
+					if (vList[0].startsWith(FeaturePrefix.odp.getsName() + "_")|| vList[0].startsWith(FeaturePrefix.cluster.getsName() + "_")) {
+						odp_cluster_map.put(vList[0], vList[1]);
+					}
+				}
+
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return odp_cluster_map;
 	}
 
 	public static void loadIndexToHive() throws SQLException {

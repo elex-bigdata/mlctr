@@ -59,7 +59,9 @@ public class FeatureValueEncoder {
 				line = in.readLine();
 				while (line != null) {
 					count++;
-					out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");					
+					if(line.trim() != null){
+						out.write(line.trim()+ ","+sequenceId.getAndIncrement()+ "\r\n");
+					}										
 					line = in.readLine();
 				}
 				in.close();

@@ -129,11 +129,9 @@ public class FormatConvertor {
 	        						clusters.add(FeaturePrefix.cluster.getsName()+"_"+cluster.toString());
 	        					}
 	        					userVec = (NamedVector) user.getVector();
-	        					out.write(userVec.getName().replace(",", "") + "," +  cluster.toString()+ "\r\n");
+	        					out.write(userVec.getName().replace(",", "") + "," +  FeaturePrefix.cluster.getsName()+"_"+cluster.toString()+ "\r\n");
 	        					
-	        				}
-	        				
-	        				out.close();
+	        				}	        					        				
 	        				
 	        			}  catch (IOException e) {
 	        				e.printStackTrace();
@@ -147,13 +145,14 @@ public class FormatConvertor {
 			 }
 		 }
 		 
-		 
+		 out.close();
+		 		 
 		 out = new BufferedWriter(new FileWriter(new File(IdxType.cluster.getSrc()+"/cluster.txt")));
 		 Iterator<String> ite = clusters.iterator();
 		 
 		 while(ite.hasNext()){
 			 
-			 out.write(ite.next());
+			 out.write(ite.next()+"\r\n");
 		 }
 		 
 		 out.close();
