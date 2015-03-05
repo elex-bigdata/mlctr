@@ -111,7 +111,7 @@ public class PrepareForIndex {
 		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '"+IdxType.other.getSrc()+"' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
 				    " select distinct concat_ws('_',case ft when 'browser' then 'ua'" +
 				    " when 'project' then 'p' when 'time' then 't'" +
-				    " when 'area' then 'ip' else ft end,fv) from feature_merge where ft !='keyword' and ft !='user' and ft not like 'query%'";
+				    " when 'area' then 'ip' else ft end,fv) from feature_merge where ft !='keyword' and ft !='user' and ft not like 'query%' and ft !='odp'";
 		stmt.execute(hql);
 		System.out.println(hql);
 		stmt.close();
