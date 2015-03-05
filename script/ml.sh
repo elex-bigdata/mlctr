@@ -33,7 +33,7 @@ rm -rf $yestoday
 rm -rf $yestoday'.gz2'
 mkdir $todaydir
 
-#cat $workdir'data/vec/0'* >> $todaydir'/user-vec.txt'
+cat $workdir'data/vec/0'* >> $todaydir'/user-vec.txt'
 cp $workdir'model/ctr.model' $todaydir'/ctr.model'
 cat $workdir'data/idx/merge.txt' >> $todaydir'/idx.txt'
 #cat $workdir'data/idx/user.idx' >> $todaydir'/idx.txt'
