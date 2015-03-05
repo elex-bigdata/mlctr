@@ -198,15 +198,11 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 																
 				Collections.sort(list);
 				
-				if(list.size()>1){
-					dto = new UserDTO(result.get("id"),u_name,list);
-					
-					userInfoMap.put(u_name,dto);
-					
-					return dto;
-				}else{
-					return null;
-				}
+				dto = new UserDTO(result.get("id"),u_name,list);
+				
+				userInfoMap.put(u_name,dto);
+				
+				return dto;
 
 			} catch (IOException e) {
 				e.printStackTrace();
