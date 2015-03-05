@@ -59,8 +59,13 @@ public class IndexLoader {
 		loadIndexToHbase(mergeFiles,"com.elex.ssp.mlctr.idx.HBasePutterMergeIdx");
 		
 		Configuration conf = new Configuration();
+		String dst = PropertiesUtils.getUserOdpClusterPath()+"/odp.txt";
+		File file = new File(dst);
+		if(file.isFile() && file.exists()){
+			file.delete();
+		}
 		FileUtil.copyMerge(FileSystem.get(conf), new Path(PropertiesUtils.getHiveWareHouse()+"/user_tag"), 
-				FileSystem.getLocal(conf), new Path(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt"), true, conf, "\n");		
+				FileSystem.getLocal(conf), new Path(dst), false, conf, "\n");		
 		List<String> odpFiles = new ArrayList<String>();		
 		odpFiles.add(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt");
 		loadIndexToHbase(odpFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserOdp");
