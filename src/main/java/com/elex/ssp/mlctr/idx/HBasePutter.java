@@ -2,26 +2,41 @@ package com.elex.ssp.mlctr.idx;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 
+import com.elex.ssp.mlctr.HbaseBasis;
+
 
 public abstract class HBasePutter implements Callable<String> {
 
-	private HTableInterface table;
+	private String tableName;
 	private List<String> lines;
 	private String file;
+	private Map<String,String> map;
 	
-	public HTableInterface getTable() {
-		return table;
+	
+	public String getTableName() {
+		return tableName;
 	}
 
 
-	public void setTable(HTableInterface table) {
-		this.table = table;
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
 	}
+
+	public Map<String, String> getMap() {
+		return map;
+	}
+
+
+	public void setMap(Map<String, String> map) {
+		this.map = map;
+	}
+
 
 
 	public List<String> getLines() {
@@ -48,6 +63,7 @@ public abstract class HBasePutter implements Callable<String> {
 
 	@Override
 	public String call() throws Exception {
+		HTableInterface  table = HbaseBasis.getConn().getTable(tableName);
 		List<Put> puts = new ArrayList<Put>();
 		long begin = System.currentTimeMillis();
 		for (String line : lines) {
@@ -75,7 +91,7 @@ public abstract class HBasePutter implements Callable<String> {
 			}
 		}
 		return puts.size()+"("+file+")";
-	}
+	}	
 	
 	
 	public abstract  Put buildPut(String line); 

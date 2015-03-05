@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.common.Pair;
 
+import com.elex.ssp.mlctr.idx.HBasePutter;
 import com.elex.ssp.mlctr.idx.IdxType;
 import com.elex.ssp.mlctr.liblinear.RandomSample;
 import com.elex.ssp.mlctr.vector.Feature;
@@ -38,17 +39,18 @@ public class Test {
 	 * @param args
 	 * @throws IOException 
 	 * @throws SQLException 
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	public static void main(String[] args) throws IOException, SQLException {
+	public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		
-		Connection con = HiveOperator.getHiveConnection();
-		Statement stmt = con.createStatement();
-		String hql ="INSERT OVERWRITE LOCAL DIRECTORY '/home/hadoop/wuzhongju/ctr/data/aaa' ROW format delimited FIELDS TERMINATED BY ',' stored AS textfile" +
-				" select distinct concat_ws('_',source,word) from tfidf";
-		stmt.execute(hql);
-		System.out.println(hql);
-		stmt.close();
-		
+		for(int i=0;i<3;i++){
+			Class onwClass1 = Class.forName("com.elex.ssp.mlctr.idx.HBasePutterMergeIdx");
+			HBasePutter putter1 = (HBasePutter) onwClass1.newInstance();
+			System.out.println(putter1.toString());
+		}
+		  		
 	}
 	
 	private static void loadWordMap(String src,Map<String, String> map) throws IOException {

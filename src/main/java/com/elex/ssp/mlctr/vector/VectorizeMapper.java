@@ -20,7 +20,7 @@ public class VectorizeMapper extends Mapper<LongWritable, Text, Text, Text> {
 		int impr = 0, click = 0;
 		String[] tF = TimeUtils.getTimeDimension(new String[] { values[3],values[4] });
 		if (tF.length == 3) {
-			String newKey = FeaturePrefix.user.getsName() + "_" + values[0] ;		            
+			String newKey = values[0] ;		            
 
 			impr = values[10] == null ? 0 : Integer.parseInt(values[10]);
 			click = values[11] == null ? 0 : Integer.parseInt(values[11]);

@@ -68,7 +68,7 @@ public class Scheduler {
 		}
 		
 		//stage 3
-		if (shouldRunNextPhase(stageArgs, currentPhase)) {
+		/*if (shouldRunNextPhase(stageArgs, currentPhase)) {
 			log.info("create user word vector and load to hbase START!!!");
 			try{
 				UserWordFeature.createUserWordFeatureFile();
@@ -78,7 +78,7 @@ public class Scheduler {
 				System.exit(success);
 			}		
 			log.info("create user word vector and load to hbase SUCCESS!!!");
-		}
+		}*/
 		
 		//stage 4
 		if (shouldRunNextPhase(stageArgs, currentPhase)) {
@@ -105,6 +105,7 @@ public class Scheduler {
 		}
 		
 		HiveOperator.closeConn();
+		HbaseBasis.getConn().close();
 	}
 	
 	

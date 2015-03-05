@@ -33,6 +33,15 @@ public class PropertiesUtils {
 	public static String getHiveurl() {
 		return pop.getProperty("hive.url");
 	}
+	
+	public static String getHiveWareHouse() {
+		return pop.getProperty("hive.warehouse");
+	}
+	
+	public static String getUserOdpClusterPath() {
+		return pop.getProperty("user.odp_cluster.path");
+	}
+	
 
 	public static String getHiveUser() {
 		return pop.getProperty("hive.user");
@@ -63,7 +72,7 @@ public class PropertiesUtils {
 		return filePathList;
 	}
 
-	public static String getIdxHiveTableName() {
+   public static String getIdxHiveTableName() {
 		
 		return pop.getProperty("idx.hive.table.name");
 	}
@@ -129,6 +138,11 @@ public class PropertiesUtils {
 	public static int getPruneUserByImpr() {
 		
 		return Integer.parseInt(pop.getProperty("user.impr.threshold"));
+	}
+
+	public static String getUserClusterResultPath() {
+
+		return pop.getProperty("user.cluster_point");
 	}
 
 }

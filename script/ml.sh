@@ -1,4 +1,7 @@
 #!/bin/sh
+
+cluster
+
 jardir='/home/hadoop/git_project_home/mlctr/target/'
 workdir='/home/hadoop/wuzhongju/ctr/'
 datadir='/data1/ssp/mlctr/'
@@ -40,3 +43,12 @@ cd $workdir
 tar -cjf $today'.gz2' $today
 scp $workdir$today'.gz2' elex@10.102.66.212:/data/ml_model
 tail /home/hadoop/wuzhongju/ctr/train.log | mailx -s "mlctr" wuzhongju@126.com
+
+
+function cluster(){
+	begin=`date -d -30day +%Y%m%d`
+	hive -e "add jar /home/hadoop/wuzhongju/ssp/feUDF-1.0.jar;CREATE TEMPORARY FUNCTION qn AS 'com.elex.ssp.udf.Query';CREATE TEMPORARY FUNCTION concatspace AS 'com.elex.ssp.udf.GroupConcatSpace';CREATE TEMPORARY FUNCTION mlsed AS 'com.elex.ssp.udf.Sed';INSERT OVERWRITE TABLE odin.user_docs select uid,concatspace(mlsed(qn(keyword))) from odin.search where array_contains(array('br','in'),nation) and day>'"$begin"' AND uid is not null group by uid" >>/home/hadoop/wuzhongju/userportrait/cluster.log 2>&1
+	hadoop jar /home/hadoop/git_project_home/mlctr/target/mlctr-2.0.jar com.elex.ssp.mlctr.FormatConvertor /user/hive/warehouse/odin.db/user_docs /ssp/userportrait/userdocs/user-doc txt-seq >>/home/hadoop/wuzhongju/userportrait/cluster.log 2>&1
+	mahout seq2sparse  -i /ssp/userportrait/userdocs -o /ssp/userportrait/uservec -ow -wt tfidf -x 90 -s 3 -md 3 -seq -n 2 -nr 20 -nv >>/home/hadoop/wuzhongju/userportrait/cluster.log 2>&1
+	mahout kmeans -i /ssp/userportrait/uservec/tfidf-vectors -c  /ssp/userportrait/kmeans/centroids -o /ssp/userportrait/kmeans/output -k 50 -x 10 -ow  --tempDir /ssp/userportrait/kmeans/temp -cl -cd 0.08 >>/home/hadoop/wuzhongju/userportrait/cluster.log 2>&1
+}

@@ -15,9 +15,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
 
-import com.elex.ssp.mlctr.HbaseBasis;
+import com.elex.ssp.mlctr.FormatConvertor;
 import com.elex.ssp.mlctr.HiveOperator;
 import com.elex.ssp.mlctr.PropertiesUtils;
 
@@ -41,13 +44,25 @@ public class IndexLoader {
 	public static void load() throws SQLException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException{
         loadIndexToHive();
 		
-		List<String> files = new ArrayList<String>();
-		
+		List<String> mergeFiles = new ArrayList<String>();		
 		//files.add(IdxType.user.getDist());
 		//files.add(IdxType.word.getDist());
-		files.add(PropertiesUtils.getIdxMergeFilePath());
+		mergeFiles.add(PropertiesUtils.getIdxMergeFilePath());		
+		loadIndexToHbase(mergeFiles,"com.elex.ssp.mlctr.idx.HBasePutterMergeIdx");
 		
-		loadIndexToHbase(files,"com.elex.ssp.mlctr.idx.HBasePutterMergeIdx");
+		Configuration conf = new Configuration();
+		FileUtil.copyMerge(FileSystem.get(conf), new Path(PropertiesUtils.getHiveWareHouse()+"/user_tag"), 
+				FileSystem.getLocal(conf), new Path(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt"), false, conf, "\n");		
+		List<String> odpFiles = new ArrayList<String>();		
+		odpFiles.add(PropertiesUtils.getUserOdpClusterPath()+"/odp.txt");
+		loadIndexToHbase(odpFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserOdp");
+		
+		FormatConvertor.readSeqfileToLocal(PropertiesUtils.getUserClusterResultPath(), PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt");
+		List<String> clusterFiles = new ArrayList<String>();
+		clusterFiles.add(PropertiesUtils.getUserOdpClusterPath()+"/cluster_points.txt");
+		loadIndexToHbase(clusterFiles,"com.elex.ssp.mlctr.idx.HBasePutterUserCluster");
+		
+		
 	}
 
 	public static void loadIndexToHive() throws SQLException {
@@ -82,7 +97,6 @@ public class IndexLoader {
 		List<Future<String>> jobs = new ArrayList<Future<String>>();
 		String line;
 		List<String> lines = new ArrayList<String>();
-		HTableInterface tableName = HbaseBasis.getConn().getTable(PropertiesUtils.getIdxHbaseTable());
 		
 		for (String file : files) {
 			fis = new FileInputStream(file);
@@ -95,7 +109,7 @@ public class IndexLoader {
 					 HBasePutter putter = (HBasePutter) onwClass.newInstance();
 					 putter.setFile(file);
 					 putter.setLines(lines);
-					 putter.setTable(tableName);
+					 putter.setTableName(PropertiesUtils.getIdxHbaseTable());
 					 
 					jobs.add(service.submit(putter));
 					lines = new ArrayList<String>();					
@@ -106,7 +120,7 @@ public class IndexLoader {
 				 HBasePutter putter = (HBasePutter) onwClass.newInstance();
 				 putter.setFile(file);
 				 putter.setLines(lines);
-				 putter.setTable(tableName);
+				 putter.setTableName(PropertiesUtils.getIdxHbaseTable());
 				jobs.add(service.submit(putter));
 			}
 		}

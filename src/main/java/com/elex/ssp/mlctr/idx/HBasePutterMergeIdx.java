@@ -15,7 +15,7 @@ public class HBasePutterMergeIdx extends HBasePutter {
 		return null;
 	}
 
-	private HBasePutterMergeIdx() {
+	public HBasePutterMergeIdx() {
 		super();
 	}
 

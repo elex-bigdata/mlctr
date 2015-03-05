@@ -39,7 +39,7 @@ public class FormatConvertor {
 			System.exit(1);
 		}else{
 			if(args[2].equals("txt-seq")){
-				LocalTextToDfsSeq(new Path(args[0]), new Path(args[1]));
+				txtToSeq(new Path(args[0]), new Path(args[1]));
 			}else if(args[2].equals("seq-txt")){
 				readSeqfileToLocal(args[0],args[1]);
 			}else{
@@ -53,7 +53,7 @@ public class FormatConvertor {
 
 	}
 
-	public static void LocalTextToDfsSeq(Path src, Path dist) throws IOException {
+	public static void txtToSeq(Path src, Path dist) throws IOException {
 		Configuration conf = new Configuration();
 		FileSystem fs = FileSystem.get(conf);
 
@@ -139,7 +139,7 @@ public class FormatConvertor {
 		 }
 		 
 		 
-		 out = new BufferedWriter(new FileWriter(new File(IdxType.cluster.getSrc())));
+		 out = new BufferedWriter(new FileWriter(new File(IdxType.cluster.getSrc()+"/cluster.txt")));
 		 Iterator<String> ite = clusters.iterator();
 		 
 		 while(ite.hasNext()){

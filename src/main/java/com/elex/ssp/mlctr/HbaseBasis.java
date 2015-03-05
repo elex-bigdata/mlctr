@@ -1,5 +1,11 @@
 package com.elex.ssp.mlctr;
 
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.MasterNotRunningException;
@@ -27,10 +33,13 @@ public class HbaseBasis {
 		//configuration.set("hbase.zookeeper.property.clientPort", "1181");
 		try {
 			hbaseAdmin = new HBaseAdmin(configuration);
-			connection = HConnectionManager.createConnection(configuration);
+			ExecutorService pool = new ThreadPoolExecutor(5, 20, 60,TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>());
+			connection = HConnectionManager.createConnection(configuration,pool);
 		} catch (MasterNotRunningException e) {
 			e.printStackTrace();
 		} catch (ZooKeeperConnectionException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
