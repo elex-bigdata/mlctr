@@ -128,27 +128,16 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			
 			plainStr.append(entry.getValue().getImpr() + " " + entry.getValue().getClick()+ " ");
 			
+			
+			if(getUserDTO(user,key.toString()) != null){
+				entry.getValue().getOtherFeature().addAll(getUserDTO(user,key.toString()).getWordList());
+			}
+			
 			for (Feature f : entry.getValue().getOtherFeature()) {
 				idStr.append(f.getIdx() + ":" + f.getValue() + " ");
 				plainStr.append(f.getKey() + ":" + f.getValue() + " ");
 			}
-			
-			
-			if(getUserDTO(user,key.toString()) != null){
-				if(getUserDTO(user,key.toString()).getIdStr() != null){
-					idText.set(idStr.append(getUserDTO(user,key.toString()).getIdStr()).toString());
-				}
-				
-				if(getUserDTO(user,key.toString()).getPlainStr() != null){
-					plainText.set(plainStr.append(getUserDTO(user,key.toString()).getPlainStr()).toString());
-				}
-				
-			}else{
-				
-				idText.set(idStr.toString());
-				plainText.set(plainStr.toString());								
-			}
-			
+						
 			if(entry.getValue().getClick()==0){
 				
 				context.getCounter(SampleCounter.negtive).increment(1);
