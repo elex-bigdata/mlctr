@@ -145,6 +145,10 @@ public class VectorizeReducer extends Reducer<Text, Text, Text, Text> {
 			}else{				
 				context.getCounter(SampleCounter.positive).increment(1);
 			}
+			
+			idText.set(idStr.toString());
+			plainText.set(plainStr.toString());	
+			
 			context.write(idText, null);
 			plain.write("plain", plainText, null);			
 		}
