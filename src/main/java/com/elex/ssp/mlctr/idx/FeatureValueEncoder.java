@@ -54,7 +54,7 @@ public class FeatureValueEncoder {
 		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dist),"UTF-8"));
 
 		for (File raw : files) {
-			if(!raw.getName().endsWith("crc")){
+			if(!raw.getName().endsWith("crc") && raw.isFile()){
 				in = new BufferedReader(new InputStreamReader(new FileInputStream(raw),"UTF-8"));
 				line = in.readLine();
 				while (line != null) {
