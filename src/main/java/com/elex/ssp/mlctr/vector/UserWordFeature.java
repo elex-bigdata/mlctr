@@ -45,7 +45,7 @@ public class UserWordFeature {
 		List<String> vector_files = new ArrayList<String>();
 		File[] files = new File(PropertiesUtils.getUserWordVectorPath()).listFiles();
 		for (File raw : files) {
-			if (!raw.getName().endsWith("crc")) {
+			if (!raw.getName().endsWith("crc") && raw.isFile()) {
 				vector_files.add(raw.getAbsolutePath());				
 			}
 		}
